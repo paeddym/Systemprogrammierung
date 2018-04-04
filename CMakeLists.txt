@@ -28,4 +28,8 @@ SET(SERVER_MODULES	src/broadcastagent.c
 INCLUDE_DIRECTORIES(src)
 
 ADD_EXECUTABLE(server ${SERVER_MODULES})
-TARGET_LINK_LIBRARIES(server Threads::Threads ${LIBRT})
+IF(LIBRT)
+	TARGET_LINK_LIBRARIES(server Threads::Threads ${LIBRT})
+ELSE()
+	TARGET_LINK_LIBRARIES(server Threads::Threads)
+ENDIF()
