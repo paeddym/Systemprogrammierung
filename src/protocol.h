@@ -11,7 +11,7 @@ typedef struct __attribute__((packed))
 	char text[MSG_MAX];	//text message
 } Message;
 
-int networkReceive(Message *buffer);
-int networkSend(const Message *buffer);
+int networkReceive(int fd, Message *buffer);
+int networkSend(int fd, const Message *buffer);
 
 #endif

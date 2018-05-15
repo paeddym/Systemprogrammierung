@@ -1,7 +1,7 @@
 #include <errno.h>
 #include "protocol.h"
 
-int networkReceive(Message *buffer)
+int networkReceive(int fd, Message *buffer)
 {
 	//TODO: Receive length
 	//TODO: Convert length byte order
@@ -12,7 +12,7 @@ int networkReceive(Message *buffer)
 	return -1;
 }
 
-int networkSend(const Message *buffer)
+int networkSend(int fd, const Message *buffer)
 {
 	//TODO: Send complete message
 
