@@ -12,7 +12,7 @@ static void *broadcastAgent(void *arg)
 	return arg;
 }
 
-int broadcastAgentStart(void)
+int broadcastAgentInit(void)
 {
 	//TODO: create message queue
 	//TODO: start thread
