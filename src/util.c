@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <assert.h>
 #include <ctype.h>
 #include <unistd.h>
 #include <errno.h>
 #include <pthread.h>
+#include <sys/types.h>
 #include "util.h"
 
 typedef enum
@@ -66,6 +68,11 @@ static void setStyle(FILE *file, OutputStyle style)
 	}
 }
 
+static void printIdentifier(FILE *file)
+{
+	fprintf(file, "%s [%ju]: ", getProgName(), (uintmax_t)getpid());
+}
+
 void utilInit(const char *argv0)
 {
 	assert(prog_name == NULL);
@@ -118,7 +125,7 @@ void normalPrint(const char *fmt, ...)
 
 	va_start(args, fmt);
 	savedCancelState = lockFile(stderr);
-	fprintf(stderr, "%s: ", getProgName());
+	printIdentifier(stderr);
 	vfprintf(stderr, fmt, args);
 	putc_unlocked('\n', stderr);
 	unlockFile(stderr, savedCancelState);
@@ -135,7 +142,7 @@ void debugPrint(const char *fmt, ...)
 		va_start(args, fmt);
 		savedCancelState = lockFile(stderr);
 		setStyle(stderr, STYLE_DEBUG);
-		fprintf(stderr, "%s: ", getProgName());
+		printIdentifier(stderr);
 		vfprintf(stderr, fmt, args);
 		putc_unlocked('\n', stderr);
 		setStyle(stderr, STYLE_NORMAL);
@@ -152,7 +159,7 @@ void infoPrint(const char *fmt, ...)
 	va_start(args, fmt);
 	savedCancelState = lockFile(stderr);
 	setStyle(stderr, STYLE_INFO);
-	fprintf(stderr, "%s: ", getProgName());
+	printIdentifier(stderr);
 	vfprintf(stderr, fmt, args);
 	putc_unlocked('\n', stderr);
 	setStyle(stderr, STYLE_NORMAL);
@@ -168,7 +175,7 @@ void errorPrint(const char *fmt, ...)
 	va_start(args, fmt);
 	savedCancelState = lockFile(stderr);
 	setStyle(stderr, STYLE_ERROR);
-	fprintf(stderr, "%s: ", getProgName());
+	printIdentifier(stderr);
 	vfprintf(stderr, fmt, args);
 	putc_unlocked('\n', stderr);
 	setStyle(stderr, STYLE_NORMAL);
@@ -185,7 +192,7 @@ void errnoPrint(const char *prefixFmt, ...)
 	va_start(args, prefixFmt);
 	savedCancelState = lockFile(stderr);
 	setStyle(stderr, STYLE_ERROR);
-	fprintf(stderr, "%s: ", getProgName());
+	printIdentifier(stderr);
 	vfprintf(stderr, prefixFmt, args);
 	fputs(": ", stderr);
 	errno = savedErrno;
@@ -234,8 +241,8 @@ void vhexdump(const void *ptr, size_t n, const char *fmt, va_list args)
 	//print every complete line
 	for(line=0; line<fullLines; ++line)
 	{
-		//program name
-		fprintf(stderr, "%s: ", getProgName());
+		//program name and process id
+		printIdentifier(stderr);
 
 		//prefix
 		va_copy(a, args);
@@ -264,8 +271,8 @@ void vhexdump(const void *ptr, size_t n, const char *fmt, va_list args)
 	//print last, incomplete line
 	if(incompleteLine)
 	{
-		//program name
-		fprintf(stderr, "%s: ", getProgName());
+		//program name and process id
+		printIdentifier(stderr);
 
 		//prefix
 		va_copy(a, args);
