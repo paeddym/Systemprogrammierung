@@ -16,7 +16,8 @@
 extern "C" {
 #endif
 
-void setProgName(const char *argv0);
+void utilInit(const char *argv0);
+
 const char *getProgName(void);
 
 void debugEnable(void);

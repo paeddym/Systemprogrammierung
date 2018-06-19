@@ -4,7 +4,7 @@
 
 int main(int argc, char **argv)
 {
-	setProgName(argv[0]);
+	utilInit(argv[0]);
 	infoPrint("Chat server, group xy");	//TODO: Add your group number!
 
 	//TODO: evaluate command line arguments
