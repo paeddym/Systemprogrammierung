@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include <ctype.h>
 #include <unistd.h>
 #include <errno.h>
@@ -22,7 +23,7 @@ typedef union
 	unsigned char bytes[sizeof(uint64_t)];
 } Uint64Bytes;
 
-static const char *prog_name = "<unknown>";
+static const char *prog_name = NULL;
 static int debug_enabled = 0;
 static int style_enabled = 1;
 
@@ -67,12 +68,16 @@ static void setStyle(FILE *file, OutputStyle style)
 
 void utilInit(const char *argv0)
 {
+	assert(prog_name == NULL);
+
 	setvbuf(stderr, NULL, _IOLBF, BUFSIZ);
 	prog_name = argv0;
 }
 
 const char *getProgName(void)
 {
+	assert(prog_name != NULL);
+
 	return prog_name;
 }
 
