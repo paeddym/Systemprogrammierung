@@ -67,6 +67,7 @@ static void setStyle(FILE *file, OutputStyle style)
 
 void setProgName(const char *argv0)
 {
+	setvbuf(stderr, NULL, _IOLBF, BUFSIZ);
 	prog_name = argv0;
 }
 
