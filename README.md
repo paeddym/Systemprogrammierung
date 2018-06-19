@@ -85,6 +85,8 @@ As this data is shared by multiple threads, remember to use proper locking here.
 
 Several utility functions, hopefully making your lives a little bit easier:
 
+* `utilInit()`: Initialize the util module, setting the program name given.
+   Must be called before any of the output functions are used.
 * `normalPrint()`, `debugPrint()`, `infoPrint()` `errorPrint()`: These are `printf()`-like output functions to
   pretty-print regular, debug, informational or error messages.
   They use colors (unless disabled via `styleDisable()`) and also print the program name in front.
@@ -92,7 +94,7 @@ Several utility functions, hopefully making your lives a little bit easier:
 * `errnoPrint()`: This is `perror()` on steroids, using colors and a `printf()`-like prefix.
 * `debugHexdump()`, `hexdump()`, `vhexdump()`: Use these to dump data in a nice hexadecimal form.
   Great for debugging or for a nice Matrix effect.
-* `setProgName()`, `getProgName()`: Set or get the program name for the output functions.
+* `getProgName()`: Get the program name used by the output functions.
 * `debugEnable()`, `debugDisable()`, `debugEnabled()`: Enable or disable `debugPrint()` and `debugHexdump()`, or
   get the status.
 * `styleEnable()`, `styleDisable()`, `styleEnabled()`: Enable or disable colorful output, or get the status.
