@@ -39,6 +39,7 @@ static int lockFile(FILE *file)
 
 static void unlockFile(FILE *file, int savedCancelState)
 {
+	fflush(file);
 	funlockfile(file);
 	pthread_setcancelstate(savedCancelState, NULL);
 }
@@ -77,7 +78,7 @@ void utilInit(const char *argv0)
 {
 	assert(prog_name == NULL);
 
-	setvbuf(stderr, NULL, _IOLBF, BUFSIZ);
+	setvbuf(stderr, NULL, _IOFBF, BUFSIZ);
 	prog_name = argv0;
 }
 
