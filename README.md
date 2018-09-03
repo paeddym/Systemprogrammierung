@@ -68,7 +68,7 @@ Of course, to make this work, you will have to create the server socket first.
 
 Pretty obvious, isn't it? Here you evaluate the command line arguments and initialize the other modules.
 
-`protocol`
+`network`
 ----------
 
 This is the module dealing with the network messages. Here you define your message strucures and implement sending and

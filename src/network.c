@@ -1,5 +1,5 @@
 #include <errno.h>
-#include "protocol.h"
+#include "network.h"
 
 int networkReceive(int fd, Message *buffer)
 {

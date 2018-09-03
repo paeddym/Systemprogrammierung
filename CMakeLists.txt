@@ -21,7 +21,7 @@ SET(SERVER_MODULES	src/broadcastagent.c
 			src/clientthread.c
 			src/connectionhandler.c
 			src/main.c
-			src/protocol.c
+			src/network.c
 			src/user.c
 			src/util.c)
 
