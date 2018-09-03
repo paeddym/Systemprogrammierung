@@ -11,7 +11,7 @@ In case you forgot how to get a local copy of the repository from the server to 
 a little reminder:
 
 1. Log in to the [Gitlab Server](https://fbe-gitlab.hs-weingarten.de).
-2. Navigate to your chat server project, e.g. `stud-syspr-ss2018/group01/chat`.
+2. Navigate to your chat server project, e.g. `stud-syspr-ws2018/group01/chat`.
 3. In the menu below the project description, choose whether you want to use HTTPS or SSH.
 4. Copy the repository address to the clipboard using the corresponding button.
 5. Open a terminal and change to the directory where you want your local repository to be stored.
