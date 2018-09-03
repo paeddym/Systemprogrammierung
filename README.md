@@ -40,7 +40,12 @@ Description of the modules
 ==========================
 
 You will see several modules in the [`src/` subdirectory of the project](src/).
-Some of them already contain a little bit of code.
+Some of them already contain a little bit of code and comments giving you some hints about what to do.
+
+You will find some functions setting `errno` to `ENOSYS` and returning an error.
+This is just a convention for functions that are not yet implemented, making them fail in a defined way instead of
+doing something random.
+**When you have implemented such a function, it should no longer fail with `ENOSYS`!**
 
 Each module has a given purpose as described below.
 
