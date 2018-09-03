@@ -54,7 +54,7 @@ You will not need this module in the first steps, only later on in the course.
 --------------
 
 Here you implement the thread function for the client thread, heavily using the functions provided by the
-`network`, `user` and `protocol` modules.
+`network` and `user` modules.
 
 `connectionhandler`
 -------------------
