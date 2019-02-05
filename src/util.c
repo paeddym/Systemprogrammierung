@@ -226,66 +226,35 @@ void hexdump(const void *ptr, size_t n, const char *fmt, ...)
 
 void vhexdump(const void *ptr, size_t n, const char *fmt, va_list args)
 {
-	const size_t charsPerLine = 16U;
+	static const size_t charsPerLine = 16U;
+	const unsigned char *array = (const unsigned char *)ptr;
 	const size_t fullLines = n/charsPerLine;
 	const size_t incompleteLine = n%charsPerLine;
-	const unsigned char *array = (const unsigned char *)ptr;
-	char byte;
-	size_t line;
-	size_t column;
-	va_list a;
-	int savedCancelState;
+	const size_t totalLines = incompleteLine ? fullLines + 1U : fullLines;
 
-	savedCancelState = lockFile(stderr);
+	const int savedCancelState = lockFile(stderr);
 	setStyle(stderr, STYLE_HEXDUMP);
 
-	//print every complete line
-	for(line=0; line<fullLines; ++line)
+	for(size_t line=0; line<totalLines; ++line)
 	{
 		//program name and process id
 		printIdentifier(stderr);
 
 		//prefix
+		va_list a;
 		va_copy(a, args);
 		vfprintf(stderr, fmt, a);
 		va_end(a);
 		fprintf(stderr, ": ");
 
-		//bytes as hex values
-		for(column=0; column<charsPerLine; ++column)
-			fprintf(stderr, "%02x ", (unsigned)array[line*charsPerLine + column]);
-
-		//space between hex values and ASCII characters
-		fprintf(stderr, "%3s", "");
-
-		//bytes as ASCII characters
-		for(column=0; column<charsPerLine; ++column)
-		{
-			byte = array[line*charsPerLine + column];
-			fprintf(stderr, "%c", isgraph(byte) ? byte : '.');
-		}
-
-		//line ending
-		fputc('\n', stderr);
-	}
-
-	//print last, incomplete line
-	if(incompleteLine)
-	{
-		//program name and process id
-		printIdentifier(stderr);
-
-		//prefix
-		va_copy(a, args);
-		vfprintf(stderr, fmt, a);
-		va_end(a);
-		fprintf(stderr, ": ");
+		const size_t columns = line >= fullLines ? incompleteLine : charsPerLine;
+		size_t column;
 
 		//bytes as hex values
-		for(column=0; column<incompleteLine; ++column)
+		for(column=0; column<columns; ++column)
 			fprintf(stderr, "%02x ", (unsigned)array[line*charsPerLine + column]);
 
-		//fill empty hex value spaces
+		//fill empty hex value spaces in last line
 		while(column++ < charsPerLine)
 			fprintf(stderr, "   ");
 
@@ -293,9 +262,9 @@ void vhexdump(const void *ptr, size_t n, const char *fmt, va_list args)
 		fprintf(stderr, "%3s", "");
 
 		//bytes as ASCII characters
-		for(column=0; column<incompleteLine; ++column)
+		for(column=0; column<columns; ++column)
 		{
-			byte = array[line*charsPerLine + column];
+			char byte = array[line*charsPerLine + column];
 			fprintf(stderr, "%c", isgraph(byte) ? byte : '.');
 		}
 
