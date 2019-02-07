@@ -51,19 +51,19 @@ static void setStyle(FILE *file, OutputStyle style)
 		switch(style)
 		{
 			case STYLE_NORMAL:
-				fprintf(file, "\033[0;39;49m");	//reset attributes and foreground color
+				fputs("\033[0;39;49m", file);	//reset attributes and foreground color
 				break;
 			case STYLE_INFO:
-				fprintf(file, "\033[1;39;49m");	//bold, default colors
+				fputs("\033[1;39;49m", file);	//bold, default colors
 				break;
 			case STYLE_ERROR:
-				fprintf(file, "\033[1;31;49m");	//bold, red
+				fputs("\033[1;31;49m", file);	//bold, red
 				break;
 			case STYLE_DEBUG:
-				fprintf(file, "\033[0;33;49m");	//regular, yellow
+				fputs("\033[0;33;49m", file);	//regular, yellow
 				break;
 			case STYLE_HEXDUMP:
-				fprintf(file, "\033[0;32;49m");	//regular, green
+				fputs("\033[0;32;49m", file);	//regular, green
 				break;
 		}
 	}
@@ -245,7 +245,7 @@ void vhexdump(const void *ptr, size_t n, const char *fmt, va_list args)
 		va_copy(a, args);
 		vfprintf(stderr, fmt, a);
 		va_end(a);
-		fprintf(stderr, ": ");
+		fputs(": ", stderr);
 
 		const size_t columns = line >= fullLines ? incompleteLine : charsPerLine;
 		size_t column;
@@ -256,7 +256,7 @@ void vhexdump(const void *ptr, size_t n, const char *fmt, va_list args)
 
 		//fill empty hex value spaces in last line
 		while(column++ < charsPerLine)
-			fprintf(stderr, "   ");
+			fputs("   ", stderr);
 
 		//space between hex values and ASCII characters
 		fprintf(stderr, "%3s", "");
@@ -265,7 +265,7 @@ void vhexdump(const void *ptr, size_t n, const char *fmt, va_list args)
 		for(column=0; column<columns; ++column)
 		{
 			char byte = array[line*charsPerLine + column];
-			fprintf(stderr, "%c", isgraph(byte) ? byte : '.');
+			fputc(isgraph(byte) ? byte : '.', stderr);
 		}
 
 		//line ending
