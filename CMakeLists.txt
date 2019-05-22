@@ -6,6 +6,8 @@ SET(CMAKE_C_STANDARD_REQUIRED ON)
 IF("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" OR
 		"${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror=implicit")
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror=return-type")
 	# Special flags for debug builds. Should eventually be changed to
 	# -Og -ggdb when everyone has a compiler supporting it.
 	SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -ggdb")
