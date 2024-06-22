@@ -7,10 +7,66 @@
  * login), replace this with message structures derived from the network
  * protocol (RFC) as found in the moodle course. */
 enum { MSG_MAX = 1024 };
+
 typedef struct __attribute__((packed))
 {
-	uint16_t len;		//real length of the text (big endian, len <= MSG_MAX)
-	char text[MSG_MAX];	//text message
+	uint32_t magic;
+	uint8_t version;
+	char name[32];
+} LoginRequest;
+
+typedef struct __attribute__((packed))
+{
+	uint32_t magic;
+	uint8_t code;
+	char name[32];
+} LoginResponse;
+
+typedef struct __attribute__((packed))
+{
+	char text[512];
+} ClientToServer;
+
+typedef struct __attribute__((packed))
+{
+	uint64_t timestamp;
+	char sender[32];
+	char text[512];
+} ServerToClient;
+
+typedef struct __attribute__((packed))
+{
+	uint64_t timestamp;
+	char name[32];
+} AddedUser;
+
+typedef struct __attribute__((packed))
+{
+	uint64_t timestamp;
+	uint8_t type;
+	char name[32];
+} RemovedUser;
+
+typedef struct __attribute__((packed))
+{
+	uint8_t type;
+	uint16_t length;	
+} Header;
+
+typedef struct __attribute__((packed))
+{
+	LoginRequest loginRequest;
+	LoginResponse loginResponse;
+	ClientToServer clientToServer;
+	ServerToClient serverToClient;
+	AddedUser addedUser;
+	RemovedUser removedUser;
+} Body;
+
+typedef struct __attribute__((packed))
+{
+	Header header;
+	Body body;
 } Message;
 
 int networkReceive(int fd, Message *buffer);

@@ -1,14 +1,16 @@
 #include <errno.h>
 #include "network.h"
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 
 int networkReceive(int fd, Message *buffer)
 {
-	//TODO: Receive length
+	ssize_t receivedBytes = recv(fd, &buffer->header, sizeof(buffer->header), MSG_WAITALL);
 	//TODO: Convert length byte order
 	//TODO: Validate length
 	//TODO: Receive text
 
-	errno = ENOSYS;
 	return -1;
 }
 
