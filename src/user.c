@@ -8,30 +8,25 @@ static pthread_mutex_t userLock = PTHREAD_MUTEX_INITIALIZER;
 static User *userFront = NULL;
 static User *userBack = NULL;
 
-//TODO: Implement the functions declared in user.h
-
 User *allocateSpace()
 {
     User *newUser = (User *)malloc(sizeof(User));
-    if(newUser == NULL)
-    {
+    if(newUser == NULL) {
         errno = ENOMEM;
-        perror("Memory allocation fail");
+        perror("Failed to allocate memory!");
         return NULL;
-        //todo errorhandling
     }
     return newUser;
 }
 
 User *addUser(User *newUser)
 {
-    if(userFront == NULL){
+    if(userFront == NULL) {
         newUser->prev = NULL;
         newUser->next = NULL;
         userFront = newUser;
         userBack = newUser;
-    }
-    else{
+    } else {
         userBack->next = newUser;
         newUser->prev = userBack;
         newUser->next = NULL;
@@ -43,7 +38,7 @@ User *addUser(User *newUser)
 void iterateList(User *self) {
     for (User *currentUser = userFront; currentUser != NULL; currentUser = currentUser->next) {
         if (currentUser != self) {
-
+            //Add features later
         }
     }
 }
@@ -51,95 +46,70 @@ void iterateList(User *self) {
 void removeUser(User *currentUser)
 {
     User *deleteUser = currentUser;
-    //Is onlyUser necessary? Because before free front and back need to be set to NULL
-    if(onlyUser(currentUser)) 
-    {
+
+    if(onlyUser(currentUser)) {
         userFront = NULL;
         userBack = NULL;
-    }
-    else if(firstUser(currentUser))
-    {
+    } else if(firstUser(currentUser)) {
         userFront = currentUser->next;
         currentUser->next->prev = NULL;
-    }
-    else if(middleUser(currentUser))
-    {
+    } else if(middleUser(currentUser)) {
         currentUser->next->prev = currentUser->prev;
         currentUser->prev->next = currentUser->next;
-    }
-    else if(lastUser(currentUser))
-    {
+    } else if(lastUser(currentUser)) {
         currentUser->prev->next = NULL;
         userBack = currentUser->prev;
     }
-    unLockUser();
+    unlockUser();
     cleanUpOfUser(deleteUser);
     
 }
 
 static bool onlyUser(User *currentUser)
 {
-    if(currentUser == userFront && currentUser == userBack)
-    {
+    if(currentUser == userFront && currentUser == userBack) {
         return true;
-    }
-    else
-    {
+    } else {
         return false;
     }
 }
 static bool firstUser(User *currentUser)
 {
-    if(currentUser == userFront && currentUser != userBack)
-    {
+    if(currentUser == userFront && currentUser != userBack) {
         return true;
-    }
-    else
-    {
+    } else {
         return false;
     }
 }
 static bool middleUser(User *currentUser)
 {
-    if(currentUser != userFront && currentUser != userBack)
-    {
+    if(currentUser != userFront && currentUser != userBack) {
         return true;
-    }
-    else
-    {
+    } else {
         return false;
     }
 }
 static bool lastUser(User *currentUser)
 {
-    if(currentUser != userFront && currentUser == userBack)
-    {
+    if(currentUser != userFront && currentUser == userBack) {
         return true;
-    }
-    else
-    {
+    } else {
         return false;
     }
 }
 
 void cleanUp(User *deleteUser)
 {
-
-    //Thread cleanup
     int cancelResult = pthread_cancel(deleteUser->thread);
-    if (cancelResult != 0)
-    {
-        perror("Thread cancellation failed\n");
+    if (cancelResult != 0) {
+        perror("Failed to cancel thread!\n");
     }
-    if (pthread_join(deleteUser->thread, NULL) != 0)
-    {
-        perror("Thread join failed\n");
+    if (pthread_join(deleteUser->thread, NULL) != 0) {
+        perror("Failed to join threads!\n");
     }
-    //Socket cleanup
-    close(deleteUser->sock);
-    //Memory cleanup
-    free(deleteUser);
-    
+
+    close(deleteUser->sock);    //Clean up the socket
+    free(deleteUser);           //Free memory
 }
 
 int initMutex() {
@@ -152,6 +122,6 @@ void lockUser(){
     pthread_mutex_lock(&userLock);
 }
 
-void unLockUser(){
+void unlockUser(){
     pthread_mutex_unlock(&userLock);
 }
