@@ -40,6 +40,14 @@ User *addUser(User *newUser)
     return newUser;
 }
 
+void iterateList(User *self) {
+    for (User *currentUser = userFront; currentUser != NULL; currentUser = currentUser->next) {
+        if (currentUser != self) {
+
+        }
+    }
+}
+
 void removeUser(User *currentUser)
 {
     User *deleteUser = currentUser;
