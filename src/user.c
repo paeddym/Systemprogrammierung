@@ -35,12 +35,20 @@ User *addUser(User *newUser)
     return newUser;
 }
 
-void iterateList(User *self) {
-    for (User *currentUser = userFront; currentUser != NULL; currentUser = currentUser->next) {
-        if (currentUser != self) {
-            //Add features later
+void iterateList(void (* func)(User *, char *), User *myUser, char *buf) {
+    User *currentUser = userFront;
+    User *next;
+    lockUser();
+    while(currentUser != NULL)
+    {
+        next = currentUser->next;
+        if(currentUser != myUser)
+        {
+            func(currentUser, buf);
         }
+        currentUser = next;
     }
+    unlockUser();
 }
 
 void removeUser(User *currentUser)

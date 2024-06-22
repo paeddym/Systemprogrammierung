@@ -18,7 +18,7 @@ User *allocateSpace();
 User *addUser();
 
 // * Iterate over the complete list (to send messages to all users)
-void iterateList(User *self);
+void iterateList(void (* func)(User *, char *), User *myUser, char *buf);
 
 // * Remove a user from the list
 void cleanUp(User *deleteUser);
