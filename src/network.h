@@ -21,39 +21,39 @@ typedef struct __attribute__((packed))
 {
 	uint32_t magic;
 	uint8_t version;
-	char name[32];
+	char requestName[nameMax];
 } LoginRequest;
 
 typedef struct __attribute__((packed))
 {
 	uint32_t magic;
 	uint8_t code;
-	char name[32];
+	char responseName[nameMax];
 } LoginResponse;
 
 typedef struct __attribute__((packed))
 {
-	char text[512];
+	char text[textMax];
 } ClientToServer;
 
 typedef struct __attribute__((packed))
 {
 	uint64_t timestamp;
-	char sender[32];
-	char text[512];
+	char sender[senderMax];
+	char text[textMax];
 } ServerToClient;
 
 typedef struct __attribute__((packed))
 {
 	uint64_t timestamp;
-	char name[32];
+	char name[nameMax];
 } AddedUser;
 
 typedef struct __attribute__((packed))
 {
 	uint64_t timestamp;
 	uint8_t code;
-	char name[32];
+	char name[nameMax];
 } RemovedUser;
 
 typedef struct __attribute__((packed))
@@ -78,7 +78,31 @@ typedef struct __attribute__((packed))
 	Body body;
 } Message;
 
+enum MESSAGE_LIMITS {
+    nameMin = 1,
+    nameMax = 31,
+    textMax = 512,
+	senderMax = 32
+};
+
+enum MESSAGE_TYPES {
+    loginRequestType = 0,
+    loginResponseType = 1,
+    client2ServerType = 2,
+    server2ClientType = 3,
+    userAddedType = 4,
+    userRemovedType = 5
+};
+
+enum ERROR_CODES {
+    noError = 0,
+    clientClosedConnectionError = 1,
+    error = -1
+};
+
 int networkReceive(int fd, Message *buffer);
 int networkSend(int fd, const Message *buffer);
+
+Message initMessage(uint8_t type);
 
 #endif
