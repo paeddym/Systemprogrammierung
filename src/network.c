@@ -19,7 +19,7 @@ int networkReceive(int fd, Message *buffer)
 		return -1;
 	}
 
-	buffer->header.length = ntohs(buffer->header.length);	// Convert to host byte order
+	buffer->header.length = ntohs(buffer->header.length);	// Convert header to host byte order
 	if(isHeaderValid(buffer->header.type, buffer->header.length) == false){
 		perror("Message with invalid header received!");
 		return -1;
@@ -37,7 +37,11 @@ int networkReceive(int fd, Message *buffer)
 	}
 	printf("Message content: %s\n", buffer->body.clientToServer.text);
 
-	if(isMessageValid(buffer) == false){
+	if(buffer->header.type == MSG_LOGIN_REQUEST){	// Convert magic number to host byte order
+		buffer->body.loginRequest.magic = ntohl(buffer->body.loginRequest.magic);
+	}
+
+	if(isBodyValid(buffer) == false){
 		perror("Message with invalid body received!");
 		return -1;
 	}
@@ -65,11 +69,22 @@ int networkSend(int fd, const Message *buffer)
 }
 
 bool isHeaderValid(uint8_t type, uint16_t length){
-	//Implement validation
-	return false;
+	if(type == MSG_LOGIN_REQUEST && (length <= 5 || length >= 37)){
+		perror("Invalid login request header length!");
+		return false;
+	} else if(type == MSG_CLIENT_TO_SERVER && length >= 512) {
+		perror("Invalid client to server header length!");
+		return false;
+	}
+	return true;
 }
 
-bool isMessageValid(Message *buffer){
-	//Implement validation
-	return false;
+bool isBodyValid(Message *buffer){
+	if (buffer->header.type == MSG_LOGIN_REQUEST){
+		if (buffer->body.loginRequest.magic != 0x0badf00d){
+			perror("Invalid magic number in login request!");
+			return false;
+		}
+	}
+	return true;
 }
