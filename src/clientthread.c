@@ -8,8 +8,9 @@
 
 void *clientthread(void *arg){
 	User *self = (User *)arg;
-
 	debugPrint("Started client thread");
+
+	//Handle login stuff
 
 	int bytes_received;
 	char buf[MAX_BUFFER_SIZE];
@@ -21,13 +22,13 @@ void *clientthread(void *arg){
     		perror("Failed to receive socket data!");
 		} else if (bytes_received == 0) {
 			removeUser(self);
-			perror("Closed connection by peer");
+			perror("Connection closed by peer");
 		} else {
 			buf[bytes_received] = '\0';
 			iterateList(sendMessageToClient, self, buf);
 		}			
 	}
-	debugPrint("Client thread stopping.");
+	debugPrint("Client thread stopped!");
 	return NULL;
 }
 
