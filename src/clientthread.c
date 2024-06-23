@@ -70,50 +70,14 @@ void *clientthread(void *arg){
 					//serverToClient message
 					strncpy(serverToClient.body.serverToClient.text, "the chat has been resumed", sizeof(serverToClient.body.serverToClient.text));
 				}
-				/*The chat has been paused or resumed successfully. In these cases,
-  				the server shall send a Server2Client message containing an
-  				implementation-defined Text to every client that is currently logged
-  				in.*/
-				else{
-					//command invalid
-					//serverToClient message
-					//OriginalSender starting with null and the Text 
-					//containing an implementation-defined error message
-					/*A client has sent an invalid command to the server. In that case,
-	  				the server shall send a Server2Client message with an
-	  				implementation-defined Text to the client which has sent the
-	  				command.*/
-
-					
-				}
-			}
-			else{
-				//fehler
-				/*A client has sent an invalid command to the server. In that case,
-	  			the server shall send a Server2Client message with an
-	  			implementation-defined Text to the client which has sent the
-	  			command.*/
-				//Sagen dass admin rechte nicht vorhanden waren
-
 			}
 		}
-		else if(clientToServer.body.clientToServer.text[0] != '/'){//Normale Nachricht
-
-			//serverToClient message
-
-			//Send them to all users, skip self
-			
-			//memset(serverToClient.body.serverToClient.originalSender, '\0', 32); // Mit Nullen initialisieren
+		else if(clientToServer.body.clientToServer.text[0] != '/'){
 			memcpy(serverToClient.body.serverToClient.sender, self->name, strlen(self->name));
 			memcpy(serverToClient.body.serverToClient.text, clientToServer.body.clientToServer.text, strlen(clientToServer.body.clientToServer.text));
 			iterateUsers(networkSend, self, &serverToClient);
 		}
-		else{
-			/*Server2Client message with an implementation-defined Text to the
-	  		client which has sent the command. The same applies if a command fails for another reason, or if there
-	  		is a general problem with forwarding regular text messages to the
-	  		client (like: server message queue is full*/
-		}
+
 		serverToClient.header.length = sizeof(serverToClient.body.serverToClient.timestamp) + sizeof(serverToClient.body.serverToClient.sender) + sizeof(serverToClient.body.serverToClient.text);
 	}
 
