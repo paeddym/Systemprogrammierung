@@ -14,6 +14,28 @@ enum MSG_TYPE{
 	MSG_REMOVED_USER = 5
 };
 
+enum MESSAGE_LIMITS {
+    nameMin = 1,
+    nameMax = 31,
+    textMax = 512,
+	senderMax = 32
+};
+
+enum MESSAGE_TYPES {
+    loginRequestType = 0,
+    loginResponseType = 1,
+    client2ServerType = 2,
+    server2ClientType = 3,
+    userAddedType = 4,
+    userRemovedType = 5
+};
+
+enum ERROR_CODES {
+    noError = 0,
+    clientClosedConnectionError = 1,
+    error = -1
+};
+
 typedef struct __attribute__((packed))
 {
 	uint32_t magic;
@@ -75,27 +97,6 @@ typedef struct __attribute__((packed))
 	Body body;
 } Message;
 
-enum MESSAGE_LIMITS {
-    nameMin = 1,
-    nameMax = 31,
-    textMax = 512,
-	senderMax = 32
-};
-
-enum MESSAGE_TYPES {
-    loginRequestType = 0,
-    loginResponseType = 1,
-    client2ServerType = 2,
-    server2ClientType = 3,
-    userAddedType = 4,
-    userRemovedType = 5
-};
-
-enum ERROR_CODES {
-    noError = 0,
-    clientClosedConnectionError = 1,
-    error = -1
-};
 
 int networkReceive(int fd, Message *buffer);
 int networkSend(int fd, const Message *buffer);
