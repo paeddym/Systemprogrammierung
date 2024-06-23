@@ -21,7 +21,7 @@ void *clientthread(void *arg){
 	int status = networkReceive(self->sock, &loginRequest);
 	int nameLength = lengthOfName(&loginRequest);
 	char clientName[nameMax];
-	memcpy(clientName, loginRequest.body.loginRequest.requestName, nameLength);
+	memcpy(clientName, loginRequest.body.loginRequest.name, nameLength);
 	lockUser();
 	if(status != noError){
 		close(self->sock);
@@ -29,23 +29,20 @@ void *clientthread(void *arg){
 		return NULL;
 	}
 
-	//Sending LoginResponse
 	Message loginResponse;
-	char *responseName = "chatbot server";
+	char *name = "Server";
 	loginResponse = initMessage(loginResponseType);
 	loginResponse.body.loginResponse.code = 0;
-	loginResponse.header.length = sizeof(loginResponse.body.loginResponse.code) + sizeof(loginResponse.body.loginResponse.responseName) + sizeof(loginResponse.body.loginResponse.magic);
-	memcpy(loginResponse.body.loginResponse.responseName, responseName, strlen(responseName));
+	loginResponse.header.length = sizeof(loginResponse.body.loginResponse.code) + sizeof(loginResponse.body.loginResponse.name) + sizeof(loginResponse.body.loginResponse.magic);
+	memcpy(loginResponse.body.loginResponse.name, name, strlen(name));
 	memcpy(self->name , clientName, strlen(clientName));//name gespeichert im user
 
-	//user added
 
 	while(1){
-		//Receive messages
 		Message clientToServer;
 		int status = networkReceive(self->sock, &clientToServer);
 		if(status != noError){
-			//todo
+			//TODO
 		}
 
 		char *command = extractCommand(clientToServer.body.clientToServer.text);
@@ -53,30 +50,6 @@ void *clientthread(void *arg){
 		Message serverToClient;
 		serverToClient = initMessage(server2ClientType); //type and timestamp set
 		strncpy(serverToClient.body.serverToClient.sender, '\0', sizeof(char));
-
-		if(clientToServer.body.clientToServer.text[0] == '/'){//Befehl
-			
-			int admin = 1;
-			if(admin == 1/*admin*/){
-				if(command == 'kick'){
-					//todo user kicken
-					//original sender setzen?
-				}
-				else if(command == 'pause'){
-					//serverToClient message
-					strncpy(serverToClient.body.serverToClient.text, "the chat has been paused", sizeof(serverToClient.body.serverToClient.text));
-				}
-				else if(command == 'resume'){
-					//serverToClient message
-					strncpy(serverToClient.body.serverToClient.text, "the chat has been resumed", sizeof(serverToClient.body.serverToClient.text));
-				}
-			}
-		}
-		else if(clientToServer.body.clientToServer.text[0] != '/'){
-			memcpy(serverToClient.body.serverToClient.sender, self->name, strlen(self->name));
-			memcpy(serverToClient.body.serverToClient.text, clientToServer.body.clientToServer.text, strlen(clientToServer.body.clientToServer.text));
-			iterateUsers(networkSend, self, &serverToClient);
-		}
 
 		serverToClient.header.length = sizeof(serverToClient.body.serverToClient.timestamp) + sizeof(serverToClient.body.serverToClient.sender) + sizeof(serverToClient.body.serverToClient.text);
 	}
@@ -102,23 +75,6 @@ int lengthOfName(Message *buffer){
 		return length;
 	}
 	return error;
-}
-
-const char* extractCommand(const char *text) {
-    const char *start = strchr(text, '/');
-    if (start != NULL) {
-        start++; // Gehe zum Zeichen nach dem Slash
-        const char *end = strchr(start, ' '); 
-        if (end == NULL) {
-            end = strchr(start, '\0'); // Wenn kein Leerzeichen gefunden wird, gehe bis zum String-Ende
-        }
-        static char command[20];
-        strncpy(command, start, end - start);
-        command[end - start] = '\0';
-        return command;
-    } else {
-        //todo
-    }
 }
 
 void sendMessageToClient(User *currentUser, char *buf) {

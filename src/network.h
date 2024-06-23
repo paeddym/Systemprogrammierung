@@ -3,9 +3,6 @@
 
 #include <stdint.h>
 
-/* TODO: When implementing the fully-featured network protocol (including
- * login), replace this with message structures derived from the network
- * protocol (RFC) as found in the moodle course. */
 enum { MSG_MAX = 1024 };
 
 enum MSG_TYPE{
@@ -21,14 +18,14 @@ typedef struct __attribute__((packed))
 {
 	uint32_t magic;
 	uint8_t version;
-	char requestName[nameMax];
+	char name[nameMax];
 } LoginRequest;
 
 typedef struct __attribute__((packed))
 {
 	uint32_t magic;
 	uint8_t code;
-	char responseName[nameMax];
+	char name[nameMax];
 } LoginResponse;
 
 typedef struct __attribute__((packed))
