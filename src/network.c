@@ -1,9 +1,35 @@
 #include <errno.h>
-#include "network.h"
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdbool.h>
+#include <stdint.h> 
+#include <string.h> 
+#include <time.h>
+#include "network.h"
+#include "connectionhandler.h"
+#include "util.h"
+
+bool isHeaderValid(uint8_t type, uint16_t length){
+	if(type == MSG_LOGIN_REQUEST && (length <= 5 || length >= 37)){
+		perror("Invalid login request header length!");
+		return false;
+	} else if(type == MSG_CLIENT_TO_SERVER && length >= 512) {
+		perror("Invalid client to server header length!");
+		return false;
+	}
+	return true;
+}
+
+bool isBodyValid(Message *buffer){
+	if (buffer->header.type == MSG_LOGIN_REQUEST){
+		if (buffer->body.loginRequest.magic != 0x0badf00d){
+			perror("Invalid magic number in login request!");
+			return false;
+		}
+	}
+	return true;
+}
 
 int networkReceive(int fd, Message *buffer)
 {
@@ -66,27 +92,6 @@ int networkSend(int fd, const Message *buffer)
 	}
 
 	return -1;
-}
-
-bool isHeaderValid(uint8_t type, uint16_t length){
-	if(type == MSG_LOGIN_REQUEST && (length <= 5 || length >= 37)){
-		perror("Invalid login request header length!");
-		return false;
-	} else if(type == MSG_CLIENT_TO_SERVER && length >= 512) {
-		perror("Invalid client to server header length!");
-		return false;
-	}
-	return true;
-}
-
-bool isBodyValid(Message *buffer){
-	if (buffer->header.type == MSG_LOGIN_REQUEST){
-		if (buffer->body.loginRequest.magic != 0x0badf00d){
-			perror("Invalid magic number in login request!");
-			return false;
-		}
-	}
-	return true;
 }
 
 Message setMessageType(uint8_t type){
@@ -173,4 +178,26 @@ void createMessage(Message *messageBuffer, const char *textBuffer){
 			convertMessageToNetworkOrder(messageBuffer);
 			break;
 	}
+}
+
+Message initMessage(uint8_t type){
+	Message newMessage;
+	switch(type){
+		case loginResponseType:
+			newMessage.header.type = loginResponseType;
+			newMessage.body.loginResponse.magic = 0xc001c001;
+			break;
+		case server2ClientType:
+			newMessage.header.type = server2ClientType; 
+			time_t currentTime = time(NULL);
+			newMessage.body.serverToClient.timestamp = (uint64_t)currentTime;
+			break;
+		case userAddedType:
+			newMessage.header.type = userAddedType;
+			break;
+		case userRemovedType:
+			newMessage.header.type = userRemovedType;
+			break;	
+	}
+	return newMessage;
 }

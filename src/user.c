@@ -3,6 +3,11 @@
 #include "clientthread.h"
 #include <errno.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h> 
+#include <string.h> 
+#include "network.h"
 
 static pthread_mutex_t userLock = PTHREAD_MUTEX_INITIALIZER;
 static User *userFront = NULL;
@@ -51,28 +56,6 @@ void iterateList(void (* func)(User *, char *), User *myUser, char *buf) {
     unlockUser();
 }
 
-void removeUser(User *currentUser)
-{
-    User *deleteUser = currentUser;
-
-    if(onlyUser(currentUser)) {
-        userFront = NULL;
-        userBack = NULL;
-    } else if(firstUser(currentUser)) {
-        userFront = currentUser->next;
-        currentUser->next->prev = NULL;
-    } else if(middleUser(currentUser)) {
-        currentUser->next->prev = currentUser->prev;
-        currentUser->prev->next = currentUser->next;
-    } else if(lastUser(currentUser)) {
-        currentUser->prev->next = NULL;
-        userBack = currentUser->prev;
-    }
-    unlockUser();
-    cleanUpOfUser(deleteUser);
-    
-}
-
 static bool onlyUser(User *currentUser)
 {
     if(currentUser == userFront && currentUser == userBack) {
@@ -118,6 +101,28 @@ void cleanUp(User *deleteUser)
 
     close(deleteUser->sock);    //Clean up the socket
     free(deleteUser);           //Free memory
+}
+
+void removeUser(User *currentUser)
+{
+    User *deleteUser = currentUser;
+
+    if(onlyUser(currentUser)) {
+        userFront = NULL;
+        userBack = NULL;
+    } else if(firstUser(currentUser)) {
+        userFront = currentUser->next;
+        currentUser->next->prev = NULL;
+    } else if(middleUser(currentUser)) {
+        currentUser->next->prev = currentUser->prev;
+        currentUser->prev->next = currentUser->next;
+    } else if(lastUser(currentUser)) {
+        currentUser->prev->next = NULL;
+        userBack = currentUser->prev;
+    }
+    unlockUser();
+    cleanUp(deleteUser);
+    
 }
 
 int initMutex() {

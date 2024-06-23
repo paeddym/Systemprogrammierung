@@ -1,7 +1,25 @@
 #include "clientthread.h"
 #include "user.h"
 #include "util.h"
+#include "network.h"
 #include <string.h> 
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include <unistd.h> 
+
+int lengthOfName(Message *buffer){
+	int length;
+	if(buffer->header.type == loginRequestType){
+		length = buffer->header.length - sizeof(buffer->body.loginRequest.magic) - sizeof(buffer->body.loginRequest.version);
+		return length;
+	}
+	if(buffer->header.type == client2ServerType){
+		length = buffer->header.length;
+		return length;
+	}
+	return error;
+}
 
 
 void *clientthread(void *arg){
@@ -45,13 +63,23 @@ void *clientthread(void *arg){
 			//TODO
 		}
 
-		char *command = extractCommand(clientToServer.body.clientToServer.text);
-
 		Message serverToClient;
 		serverToClient = initMessage(server2ClientType); //type and timestamp set
 		strncpy(serverToClient.body.serverToClient.sender, '\0', sizeof(char));
 
 		serverToClient.header.length = sizeof(serverToClient.body.serverToClient.timestamp) + sizeof(serverToClient.body.serverToClient.sender) + sizeof(serverToClient.body.serverToClient.text);
+
+		if(clientToServer.body.clientToServer.text[0] != '/'){//Normale Nachricht
+
+			//serverToClient message
+
+			//Send them to all users, skip self
+			
+			//memset(serverToClient.body.serverToClient.sender, '\0', 32); // Mit Nullen initialisieren
+			memcpy(serverToClient.body.serverToClient.sender, self->name, strlen(self->name));
+			memcpy(serverToClient.body.serverToClient.text, clientToServer.body.clientToServer.text, strlen(clientToServer.body.clientToServer.text));
+			iterateList(networkSend, self, &serverToClient);
+		}
 	}
 
 	if(clientName[0] == '\0'){
@@ -62,24 +90,4 @@ void *clientthread(void *arg){
 	free(buffer);
 	debugPrint("Stopped client thread");
 	return NULL;
-}
-
-int lengthOfName(Message *buffer){
-	int length;
-	if(buffer->header.type == loginRequestType){
-		length = buffer->header.length - sizeof(buffer->body.loginRequest.magic) - sizeof(buffer->body.loginRequest.version);
-		return length;
-	}
-	if(buffer->header.type == client2ServerType){
-		length = buffer->header.length;
-		return length;
-	}
-	return error;
-}
-
-void sendMessageToClient(User *currentUser, char *buf) {
-	int bytes_sent = send(currentUser->sock, buf, strlen(buf), 0);
-	if (bytes_sent == -1) {
-		perror("Failed to send message!");
-	}
 }

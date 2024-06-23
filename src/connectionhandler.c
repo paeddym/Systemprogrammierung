@@ -1,4 +1,6 @@
 #include <errno.h>
+#include <string.h>
+#include <stdlib.h> 
 #include "connectionhandler.h"
 #include "util.h"
 #include "user.h"
@@ -44,7 +46,7 @@ int connectionHandler(in_port_t port)
 		return -1;
 	}
 
-	if(initMutex != 0) {
+	if(initMutex() != 0) {
 		errorPrint("Failed to initialize mutex!");
 		return -1;
 	}
@@ -58,7 +60,7 @@ int connectionHandler(in_port_t port)
 		}
 
 		lockUser();
-		User *myUser = allocateSpaceForUser();
+		User *myUser = allocateSpace();
 		myUser->thread = 0;
 		myUser->name[0] = '\0';
 		myUser->sock = client_socket;
