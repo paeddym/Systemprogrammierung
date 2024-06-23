@@ -88,3 +88,89 @@ bool isBodyValid(Message *buffer){
 	}
 	return true;
 }
+
+Message setMessageType(uint8_t type){
+	Message message;
+	switch(type){
+		case MSG_LOGIN_RESPONSE:
+			message.header.type = MSG_LOGIN_RESPONSE;
+			message.body.loginResponse.magic = 0x0c001c001;
+			break;
+		case MSG_SERVER_TO_CLIENT:
+			message.header.type = MSG_SERVER_TO_CLIENT;
+			break;
+		case MSG_ADDED_USER:
+			message.header.type = MSG_ADDED_USER;
+			break;
+		case MSG_REMOVED_USER:
+			message.header.type = MSG_REMOVED_USER;
+			break;
+	}
+	return message;
+
+}
+
+void setLength(Message *messageBuffer, int contentLength){
+	uint16_t length = 0;
+	switch (messageBuffer->header.type){
+		case MSG_LOGIN_RESPONSE:
+			length = sizeof(messageBuffer->body.loginResponse.magic) + sizeof(messageBuffer->body.loginResponse.code) + contentLength;
+			break;
+		case MSG_SERVER_TO_CLIENT:
+			length = sizeof(messageBuffer->body.serverToClient.timestamp) + sizeof(messageBuffer->body.serverToClient.sender) + contentLength;
+			break;
+		case MSG_ADDED_USER:
+			length = sizeof(messageBuffer->body.addedUser.timestamp) + contentLength;
+			break;
+		case MSG_REMOVED_USER:
+			length = sizeof(messageBuffer->body.removedUser.timestamp) + sizeof(messageBuffer->body.removedUser.code) + contentLength;
+			break;
+	}
+	messageBuffer->header.length = length;
+}
+
+void convertMessageToNetworkOrder(Message *messageBuffer){
+	messageBuffer->header.length = htons(messageBuffer->header.length);
+	
+	switch(messageBuffer->header.type){
+		case MSG_LOGIN_RESPONSE:
+			messageBuffer->body.loginResponse.magic = htonl(messageBuffer->body.loginResponse.magic);
+			break;
+		case MSG_SERVER_TO_CLIENT:
+			messageBuffer->body.serverToClient.timestamp = hton64u(messageBuffer->body.serverToClient.timestamp);
+			break;
+		case MSG_ADDED_USER:
+			messageBuffer->body.addedUser.timestamp = hton64u(messageBuffer->body.addedUser.timestamp);
+			break;
+		case MSG_REMOVED_USER:
+			messageBuffer->body.removedUser.timestamp = hton64u(messageBuffer->body.removedUser.timestamp);
+			break;
+	}
+}
+
+void createMessage(Message *messageBuffer, const char *textBuffer){
+	int textLength = strlen(textBuffer);
+	setLength(messageBuffer, textLength);
+	uint64_t timestamp = time(NULL);
+
+	switch(messageBuffer->header.type){
+		case MSG_LOGIN_RESPONSE:
+			memcpy(messageBuffer->body.loginResponse.name, textBuffer, textLength);
+			convertMessageToNetworkOrder(messageBuffer);
+			break;
+		case MSG_SERVER_TO_CLIENT:
+			messageBuffer->body.serverToClient.timestamp = timestamp;
+			memcpy(messageBuffer->body.serverToClient.text, textBuffer, textLength);
+			convertMessageToNetworkOrder(messageBuffer);
+			break;
+		case MSG_ADDED_USER:
+			messageBuffer->body.addedUser.timestamp = timestamp;
+			
+			break;
+		case MSG_REMOVED_USER:
+			messageBuffer->body.removedUser.timestamp = timestamp;
+			memcpy(messageBuffer->body.removedUser.name, textBuffer, textLength);
+			convertMessageToNetworkOrder(messageBuffer);
+			break;
+	}
+}

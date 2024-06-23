@@ -52,7 +52,7 @@ typedef struct __attribute__((packed))
 typedef struct __attribute__((packed))
 {
 	uint64_t timestamp;
-	uint8_t type;
+	uint8_t code;
 	char name[32];
 } RemovedUser;
 
