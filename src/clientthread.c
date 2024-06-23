@@ -31,11 +31,11 @@ void *clientthread(void *arg){
 
 	//Sending LoginResponse
 	Message loginResponse;
-	char *sName = "chatbot server";
+	char *responseName = "chatbot server";
 	loginResponse = initMessage(loginResponseType);
 	loginResponse.body.loginResponse.code = 0;
 	loginResponse.header.length = sizeof(loginResponse.body.loginResponse.code) + sizeof(loginResponse.body.loginResponse.responseName) + sizeof(loginResponse.body.loginResponse.magic);
-	memcpy(loginResponse.body.loginResponse.responseName, sName, strlen(sName));
+	memcpy(loginResponse.body.loginResponse.responseName, responseName, strlen(responseName));
 	memcpy(self->name , clientName, strlen(clientName));//name gespeichert im user
 
 	//user added
@@ -87,7 +87,7 @@ void *clientthread(void *arg){
 	}
 
 	free(buffer);
-	debugPrint("Client thread stopping.");
+	debugPrint("Stopped client thread");
 	return NULL;
 }
 
