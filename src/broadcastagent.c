@@ -36,10 +36,10 @@ int broadcastAgentInit(void)
 
 void broadcastAgentCleanup(void)
 {
-
+	//TODO: Cleanup
 }
 
-int receiveMessage(int fd, Message *buffer){
+int receive(int fd, Message *buffer){
     int connectionStatus = networkReceive(fd, buffer);
     if (connectionStatus <= connectionError) {
         errorPrint("Failed to receive message! %d ", connectionStatus);
@@ -49,6 +49,6 @@ int receiveMessage(int fd, Message *buffer){
 
 
 
-void sendMessage(User *myUser, Message *buffer){
+void send(User *myUser, Message *buffer){
 	networkSend(myUser->sock, buffer);
 }

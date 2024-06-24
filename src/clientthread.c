@@ -45,13 +45,14 @@ void handleUserRemoved(User *user, int code){
 	removeUser(user);
 }
 
-void handleLogin(User *self, char *name, Message *loginRequest){
+int handleLogin(User *self, char *name, Message *loginRequest){
 	Message loginResponse = initMessage(MSG_LOGIN_RESPONSE);
 	const char serverName[nameMax] = "Server\0";
 	int code = checkLoginRequest(name, loginRequest->body.loginRequest.version);
 	loginResponse.body.loginResponse.code = code;
 	createMessage(&loginResponse, serverName);
-	//network send ... 
+	send(self, &loginResponse);
+	return code;
 }
 
 //Client Thread

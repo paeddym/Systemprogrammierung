@@ -6,6 +6,6 @@
 
 int broadcastAgentInit(void);
 void broadcastAgentCleanup(void);
-int receiveMessage(int fd, Message *buffer);
-void sendMessage(User *myUser, Message *buffer);
+int receive(int fd, Message *buffer);
+void send(User *myUser, Message *buffer);
 #endif
