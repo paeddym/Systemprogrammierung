@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h> 
+#include "broadcastagent.h"
 
 //Functions
 
@@ -45,13 +46,14 @@ void handleUserRemoved(User *user, int code){
 	removeUser(user);
 }
 
-void handleLogin(User *self, char *name, Message *loginRequest){
+int handleLogin(User *self, char *name, Message *loginRequest){
 	Message loginResponse = initMessage(MSG_LOGIN_RESPONSE);
 	const char serverName[nameMax] = "Server\0";
 	int code = checkLoginRequest(name, loginRequest->body.loginRequest.version);
 	loginResponse.body.loginResponse.code = code;
 	createMessage(&loginResponse, serverName);
-	//network send ... 
+	send(self, &loginResponse);
+	return code;
 }
 
 //Client Thread
@@ -61,9 +63,37 @@ void *clientthread(void *arg){
 	debugPrint("Started client thread");
 
 	//Receiving Login Request
+	Message loginRequest;
+	int code = receive(self->sock, &loginRequest);
+	if(code != 0){
+		errorPrint("Login Error");
+		unlockUser();
+		cleanUp(self);
+		return NULL;
+	}
+	printf("Receiving Login Request\n");
+
+	char name[nameMax];
+	int nameLength = getHeaderLength(&loginRequest);
+	memcpy(name, loginRequest.body.loginRequest.name, nameLength);
+	name[nameLength] = '\0';
+	printf("Name: %s\n", name);
+
 
 	//Send Login Response
+	code = handleLogin(self, name, &loginRequest);
+	if(code != loginSuccess){
+		errorPrint("Login Error");
+		unlockUser();
+		cleanUp(self);
+		return NULL;
+	}
 
+	addUser(self);
+	strcpy(self->name, name);
+	printf("Added user %s\n", name);
+
+	//TODO: Send added user message to all users
 
 	return NULL;
 }

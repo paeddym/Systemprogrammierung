@@ -33,22 +33,23 @@ bool isBodyValid(Message *buffer){
 
 int networkReceive(int fd, Message *buffer)
 {
+	int code = noError;
 	ssize_t receivedBytes = recv(fd, &buffer->header, sizeof(buffer->header), MSG_WAITALL);
 
 	printf("Receiving message with length %d and type %d\n", buffer->header.length, buffer->header.type);
 
 	if (receivedBytes == -1) {
 		perror("Failed to receive message!");
-		return -1;
+		return error;
 	} else if (receivedBytes == 0) {
 		perror("Connection has been closed by the client!");
-		return -1;
+		return clientClosedConnectionError;
 	}
 
 	buffer->header.length = ntohs(buffer->header.length);	// Convert header to host byte order
 	if(isHeaderValid(buffer->header.type, buffer->header.length) == false){
 		perror("Message with invalid header received!");
-		return -1;
+		return error;
 	}
 
 
@@ -56,10 +57,10 @@ int networkReceive(int fd, Message *buffer)
 	printf("Received %ld bytes\n", receivedBytes);
 	if(receivedBytes == 0){
 		perror("Connection has been closed by the client!");
-		return -1;
+		return clientClosedConnectionError;
 	} else if(receivedBytes == -1){
 		perror("Failed to receive message!");
-		return -1;
+		return error;
 	}
 	printf("Message content: %s\n", buffer->body.clientToServer.text);
 
@@ -69,10 +70,10 @@ int networkReceive(int fd, Message *buffer)
 
 	if(isBodyValid(buffer) == false){
 		perror("Message with invalid body received!");
-		return -1;
+		code = error;
 	}
 
-	return -1;
+	return code;
 }
 
 int networkSend(int fd, const Message *buffer)

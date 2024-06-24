@@ -40,7 +40,7 @@ enum ERROR_CODES {
 };
 
 enum USER_REMOVED_CODES {
-    ClosedByClient = 0,
+    closedByClient = 0,
     kickedByAdmin = 1, 
     connectionError = 2
 };
