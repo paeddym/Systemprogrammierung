@@ -39,10 +39,18 @@ enum ERROR_CODES {
     error = -1
 };
 
-enum USERREMOVED_CODES {
+enum USER_REMOVED_CODES {
     ClosedByClient = 0,
     kickedByAdmin = 1, 
     connectionError = 2
+};
+
+enum LOGIN_RESPONSE_CODES {
+	loginSuccess = 0,
+	loginNameTaken = 1,
+	loginInvalidName = 2,
+	loginProtocolMismatch = 3,
+	loginError = 4
 };
 
 typedef struct __attribute__((packed))

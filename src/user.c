@@ -131,3 +131,23 @@ void lockUser(){
 void unlockUser(){
     pthread_mutex_unlock(&userLock);
 }
+
+User *getUserByName(const char *name)
+{
+    User *currentUser = userFront;
+    lockUser();
+    while(currentUser != NULL)
+    {
+        printf("Checking user %s\n", currentUser->name);
+        if(strcmp(currentUser->name, name) == 0)
+        {
+            unlockUser();
+            printf("User %s found!\n", currentUser->name);
+            return currentUser;
+        }
+        currentUser = currentUser->next;
+    }
+    unlockUser();
+    printf("User not found!\n");
+    return NULL;
+}

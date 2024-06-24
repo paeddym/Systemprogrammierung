@@ -29,4 +29,6 @@ int initMutex();
 void lockUser();
 void unlockUser();
 
+User *getUserByName(const char *name);
+
 #endif
