@@ -18,7 +18,10 @@ enum MESSAGE_LIMITS {
     nameMin = 1,
     nameMax = 31,
     textMax = 512,
-	senderMax = 32
+	senderMax = 32,
+	headerMax = 3,
+    bodyMax = 552,
+	messageMax = headerMax + bodyMax + 1
 };
 
 enum MESSAGE_TYPES {
@@ -106,6 +109,9 @@ typedef struct __attribute__((packed))
 
 int networkReceive(int fd, Message *buffer);
 int networkSend(int fd, const Message *buffer);
+void createMessage(Message *messageBuffer, const char *textBuffer);
+void setLength(Message *messageBuffer, int contentLength);
+void convertMessageToNetworkOrder(Message *messageBuffer);
 
 Message initMessage(uint8_t type);
 

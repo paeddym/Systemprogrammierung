@@ -40,20 +40,13 @@ User *addUser(User *newUser)
     return newUser;
 }
 
-void iterateList(void (* func)(User *, char *), User *myUser, char *buf) {
-    User *currentUser = userFront;
-    User *next;
-    lockUser();
-    while(currentUser != NULL)
-    {
-        next = currentUser->next;
-        if(currentUser != myUser)
-        {
-            func(currentUser, buf);
+void iterateList(int (*func)(int, const Message *), User *self, void *buffer) {
+    for (User *currentUser = userFront; currentUser != NULL; currentUser = currentUser->next) {
+        if (currentUser != self) {
+            printf("send to: %s", currentUser->name);
+            func(currentUser->sock, buffer);
         }
-        currentUser = next;
     }
-    unlockUser();
 }
 
 static bool onlyUser(User *currentUser)

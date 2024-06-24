@@ -5,7 +5,7 @@
 int main(int argc, char **argv)
 {
 	utilInit(argv[0]);
-	infoPrint("Chat server, group xy");	//TODO: Add your group number!
+	infoPrint("Chat server, group 01");
 
 	//TODO: evaluate command line arguments
 	//TODO: perform initialization
