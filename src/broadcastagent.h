@@ -6,9 +6,9 @@
 
 int broadcastAgentInit(void);
 void broadcastAgentCleanup(void);
-int receive(int fd, Message *buffer);
+int receiveMessage(int fd, Message *buffer);
 void broadcastMessage(Message *buffer, User *skipUser);
-void send(User *myUser, Message *buffer);
+void sendMessage(User *myUser, Message *buffer);
 void sendToMessageQueue(Message *buffer, User *user);
 
 #endif

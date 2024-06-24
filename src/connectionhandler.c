@@ -63,7 +63,7 @@ int connectionHandler(in_port_t port)
 		User *myUser = allocateSpace();
 		myUser->thread = 0;
 		myUser->name[0] = '\0';
-		myUser->sock = client_socket;
+		myUser->socket = client_socket;
 
 		int status = pthread_create(&myUser->thread, NULL, clientthread, myUser);
 		if(status != 0){

@@ -78,21 +78,22 @@ int networkReceive(int fd, Message *buffer)
 
 int networkSend(int fd, const Message *buffer)
 {
+	int code = noError;
 	printf("Sending message:\nlength = %d\ntype = %d\ncontent = %s\n", buffer->header.length, buffer->header.type, buffer->body.serverToClient.text);
 
 	ssize_t sentBytes = send(fd, &buffer->header, sizeof(buffer->header), 0);
 	if (sentBytes == -1) {
 		perror("Failed to send message header!");
-		return -1;
+		code = error;
 	}
 
 	sentBytes = send(fd, &buffer->body, buffer->header.length, 0);
 	if (sentBytes == -1) {
 		perror("Failed to send message body!");
-		return -1;
+		code = error;
 	}
 
-	return -1;
+	return code;
 }
 
 Message setMessageType(uint8_t type){
@@ -188,8 +189,8 @@ Message initMessage(uint8_t type){
 			newMessage.header.type = loginResponseType;
 			newMessage.body.loginResponse.magic = 0xc001c001;
 			break;
-		case server2ClientType:
-			newMessage.header.type = server2ClientType; 
+		case serverToClientType:
+			newMessage.header.type = serverToClientType; 
 			time_t currentTime = time(NULL);
 			newMessage.body.serverToClient.timestamp = (uint64_t)currentTime;
 			break;

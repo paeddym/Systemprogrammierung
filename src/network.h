@@ -27,8 +27,8 @@ enum MESSAGE_LIMITS {
 enum MESSAGE_TYPES {
     loginRequestType = 0,
     loginResponseType = 1,
-    client2ServerType = 2,
-    server2ClientType = 3,
+    clientToServerType = 2,
+    serverToClientType = 3,
     userAddedType = 4,
     userRemovedType = 5
 };
@@ -120,7 +120,6 @@ int networkSend(int fd, const Message *buffer);
 void createMessage(Message *messageBuffer, const char *textBuffer);
 void setLength(Message *messageBuffer, int contentLength);
 void convertMessageToNetworkOrder(Message *messageBuffer);
-
 Message initMessage(uint8_t type);
 
 #endif

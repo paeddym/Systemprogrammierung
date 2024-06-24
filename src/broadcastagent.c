@@ -15,6 +15,10 @@ static unsigned int priority = 0;
 
 static char *messageQueueName = "/msq";
 
+void broadcastMessage(Message *buffer, User *skipUser){
+	iterateList(networkSend, skipUser, buffer);
+}
+
 static void *broadcastAgent(void *arg)
 {
 	//TODO: Implement thread function for the broadcast agent here!
@@ -68,8 +72,12 @@ int broadcastAgentInit(void)
 	return 0;
 }
 
+void sendMessage(User *myUser, Message *buffer){
+	networkSend(myUser->socket, buffer);
+}
+
 void sendToMessageQueue(Message *buffer, User *user) {
-    Message msg = initMessage(server2ClientType);
+    Message message = initMessage(MSG_SERVER_TO_CLIENT);
 
     struct timespec ts;
     ts.tv_sec = 0;
@@ -77,10 +85,10 @@ void sendToMessageQueue(Message *buffer, User *user) {
 
 	mq_timedsend(messageQueue, (char *)buffer, attr.mq_msgsize, priority, &ts);
 	if (errno == ETIMEDOUT) {
-		msg.body.serverToClient.timestamp = (uint64_t)time(NULL);
-		msg.body.serverToClient.sender[0] = '\0';
-		createMessage(&msg, "chat is paused and the send queue is full!");
-		send(user, &msg);
+		message.body.serverToClient.timestamp = (uint64_t)time(NULL);
+		message.body.serverToClient.sender[0] = '\0';
+		createMessage(&message, "chat is paused and the send queue is full!");
+		sendMessage(user, &message);
 	}
 }
 
@@ -91,18 +99,10 @@ void broadcastAgentCleanup(void)
 	mq_unlink(messageQueueName);
 }
 
-int receive(int fd, Message *buffer){
+int receiveMessage(int fd, Message *buffer){
     int connectionStatus = networkReceive(fd, buffer);
     if (connectionStatus != 0) {
         errorPrint("Failed to receive message! %d ", connectionStatus);
     }
     return connectionStatus;
-}
-
-void broadcastMessage(Message *buffer, User *skipUser){
-	iterateList(networkSend, skipUser, buffer);
-}
-
-void sendMessage(User *myUser, Message *buffer){
-	networkSend(myUser->sock, buffer);
 }

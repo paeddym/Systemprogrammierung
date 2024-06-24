@@ -9,7 +9,7 @@ typedef struct User
 	struct User *prev;
 	struct User *next;
 	pthread_t thread;	//thread ID of the client thread
-	int sock;			//socket for client
+	int socket;			//socket for client
 	char name[32];
 } User;
 
@@ -30,5 +30,6 @@ void lockUser();
 void unlockUser();
 
 User *getUserByName(const char *name);
+User *getFirstUser();
 
 #endif

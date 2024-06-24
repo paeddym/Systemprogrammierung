@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include "connectionhandler.h"
 #include "util.h"
+#include "broadcastagent.h"
+#include <stdio.h>
 
 int main(int argc, char **argv)
 {
@@ -9,6 +11,10 @@ int main(int argc, char **argv)
 
 	//TODO: evaluate command line arguments
 	//TODO: perform initialization
+	if (broadcastAgentInit() == -1) {
+		printf("Failed to initialize broadcast agent!\n");
+		return EXIT_FAILURE;
+	}
 
 	//TODO: use port specified via command line
 	const int result = connectionHandler((in_port_t)8111);

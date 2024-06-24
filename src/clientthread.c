@@ -39,7 +39,7 @@ int checkLoginRequest(const char *clientName, uint8_t version){
 
 void handleUserRemoved(User *user, int code){
 	lockUser();
-	Message userRemoved = initMessage(MSG_REMOVED_USER);
+	Message userRemoved = initMessage(userRemovedType);
 	userRemoved.body.removedUser.code = code;
 	createMessage(&userRemoved, user->name);
 	printf("%s has left the chat\n", user->name);
@@ -47,12 +47,12 @@ void handleUserRemoved(User *user, int code){
 }
 
 int handleLogin(User *self, char *name, Message *loginRequest){
-	Message loginResponse = initMessage(MSG_LOGIN_RESPONSE);
+	Message loginResponse = initMessage(loginResponseType);
 	const char serverName[nameMax] = "Server\0";
 	int code = checkLoginRequest(name, loginRequest->body.loginRequest.version);
 	loginResponse.body.loginResponse.code = code;
 	createMessage(&loginResponse, serverName);
-	send(self, &loginResponse);
+	sendMessage(self, &loginResponse);
 	return code;
 }
 
@@ -64,7 +64,7 @@ void *clientthread(void *arg){
 
 	//Receiving Login Request
 	Message loginRequest;
-	int code = receive(self->sock, &loginRequest);
+	int code = receiveMessage(self->socket, &loginRequest);
 	if(code != 0){
 		errorPrint("Login Error");
 		unlockUser();
@@ -93,7 +93,62 @@ void *clientthread(void *arg){
 	strcpy(self->name, name);
 	printf("Added user %s\n", name);
 
-	//TODO: Send added user message to all users
+
+	//Send new user data to all users
+	Message userData = initMessage(userAddedType);
+	createMessage(&userData, self->name);
+	broadcastMessage(&userData, NULL);
+	printf("%s has joined the chat", self->name);
+
+	
+	//Send data of registered users to new user
+	User *currentUser = getFirstUser();
+	while(currentUser->next != NULL){
+		if(currentUser != self){
+			userData = initMessage(userAddedType);
+			createMessage(&userData, currentUser->name);
+			userData.body.addedUser.timestamp = 0;
+			sendMessage(self, &userData);
+		}
+		currentUser = currentUser->next;
+	}
+
+	//Enter chat loop
+	Message clientToServer, serverToClient;
+	uint8_t userRemovedCode;
+	char buffer[textMax];
+
+	while(1){
+		serverToClient = initMessage(serverToClientType);
+		memset(buffer, 0, sizeof(textMax));
+		memset(clientToServer.body.clientToServer.text, 0, sizeof(clientToServer.body.clientToServer.text));
+		memset(serverToClient.body.serverToClient.text, 0, sizeof(serverToClient.body.serverToClient.text));
+
+		int code = receiveMessage(self->socket, &clientToServer);
+		if(code == clientClosedConnectionError){
+			printf("Connection closed by client\n");
+			userRemovedCode = closedByClient;
+			break;
+		} else if(code == error){
+			printf("Error receiving message\n");
+			userRemovedCode = connectionError;
+			break;
+		}
+
+		int textLength = getHeaderLength(&clientToServer);
+		memcpy(buffer, clientToServer.body.clientToServer.text, textLength);
+		buffer[textLength] = '\0';
+
+		if(buffer[0] != '/'){
+			strcpy(serverToClient.body.serverToClient.sender, self->name);
+			createMessage(&serverToClient, buffer);
+			sendToMessageQueue(&serverToClient, self);
+			continue;
+		}
+	}
+
+	unlockUser();
+
 
 	return NULL;
 }

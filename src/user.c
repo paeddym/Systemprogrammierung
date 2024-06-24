@@ -44,7 +44,7 @@ void iterateList(int (*func)(int, const Message *), User *self, void *buffer) {
     for (User *currentUser = userFront; currentUser != NULL; currentUser = currentUser->next) {
         if (currentUser != self) {
             printf("send to: %s", currentUser->name);
-            func(currentUser->sock, buffer);
+            func(currentUser->socket, buffer);
         }
     }
 }
@@ -92,8 +92,8 @@ void cleanUp(User *deleteUser)
         perror("Failed to join threads!\n");
     }
 
-    close(deleteUser->sock);    //Clean up the socket
-    free(deleteUser);           //Free memory
+    close(deleteUser->socket);    //Clean up the socket
+    free(deleteUser);             //Free memory
 }
 
 void removeUser(User *currentUser)
@@ -150,4 +150,9 @@ User *getUserByName(const char *name)
     unlockUser();
     printf("User not found!\n");
     return NULL;
+}
+
+User *getFirstUser()
+{
+    return userFront;
 }
