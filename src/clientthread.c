@@ -8,86 +8,62 @@
 #include <time.h>
 #include <unistd.h> 
 
-int lengthOfName(Message *buffer){
+//Functions
+
+int getHeaderLength(Message *buffer){
 	int length;
-	if(buffer->header.type == loginRequestType){
+	if(buffer->header.type == MSG_LOGIN_REQUEST){
 		length = buffer->header.length - sizeof(buffer->body.loginRequest.magic) - sizeof(buffer->body.loginRequest.version);
 		return length;
 	}
-	if(buffer->header.type == client2ServerType){
+	if(buffer->header.type == MSG_CLIENT_TO_SERVER){
 		length = buffer->header.length;
 		return length;
 	}
 	return error;
 }
 
+int checkLoginRequest(const char *clientName, uint8_t version){
+	if(version != 0){
+		return loginProtocolMismatch;
+	}
+
+	for(int i = 0; clientName[i]; i++) {
+		if(clientName[i] < 33 || clientName[i] >= 126 || clientName[i] == 34 || clientName[i] == 37 || clientName[i] == 96){
+			return loginInvalidName;
+		}
+	}
+	return (getUserByName(clientName) == NULL) ? loginSuccess : loginNameTaken;
+}
+
+void handleUserRemoved(User *user, int code){
+	lockUser();
+	Message userRemoved = initMessage(MSG_REMOVED_USER);
+	userRemoved.body.removedUser.code = code;
+	createMessage(&userRemoved, user->name);
+	printf("%s has left the chat\n", user->name);
+	removeUser(user);
+}
+
+void handleLogin(User *self, char *name, Message *loginRequest){
+	Message loginResponse = initMessage(MSG_LOGIN_RESPONSE);
+	const char serverName[nameMax] = "Server\0";
+	int code = checkLoginRequest(name, loginRequest->body.loginRequest.version);
+	loginResponse.body.loginResponse.code = code;
+	createMessage(&loginResponse, serverName);
+	//network send ... 
+}
+
+//Client Thread
 
 void *clientthread(void *arg){
 	User *self = (User *)arg;
-
 	debugPrint("Started client thread");
 
-	Message *buffer = calloc(1, sizeof(Message));
-	if (buffer == NULL)
-	{
-    	perror("Memory allocation failed");
-    	return NULL;
-	}
+	//Receiving Login Request
 
-	//Receive LoginRequest
-	Message loginRequest;
-	int status = networkReceive(self->sock, &loginRequest);
-	int nameLength = lengthOfName(&loginRequest);
-	char clientName[nameMax];
-	memcpy(clientName, loginRequest.body.loginRequest.name, nameLength);
-	lockUser();
-	if(status != noError){
-		close(self->sock);
-		unlockUser();
-		return NULL;
-	}
-
-	Message loginResponse;
-	char *name = "Server";
-	loginResponse = initMessage(loginResponseType);
-	loginResponse.body.loginResponse.code = 0;
-	loginResponse.header.length = sizeof(loginResponse.body.loginResponse.code) + sizeof(loginResponse.body.loginResponse.name) + sizeof(loginResponse.body.loginResponse.magic);
-	memcpy(loginResponse.body.loginResponse.name, name, strlen(name));
-	memcpy(self->name , clientName, strlen(clientName));//name gespeichert im user
+	//Send Login Response
 
 
-	while(1){
-		Message clientToServer;
-		int status = networkReceive(self->sock, &clientToServer);
-		if(status != noError){
-			//TODO
-		}
-
-		Message serverToClient;
-		serverToClient = initMessage(server2ClientType); //type and timestamp set
-		strncpy(serverToClient.body.serverToClient.sender, '\0', sizeof(char));
-
-		serverToClient.header.length = sizeof(serverToClient.body.serverToClient.timestamp) + sizeof(serverToClient.body.serverToClient.sender) + sizeof(serverToClient.body.serverToClient.text);
-
-		if(clientToServer.body.clientToServer.text[0] != '/'){//Normale Nachricht
-
-			//serverToClient message
-
-			//Send them to all users, skip self
-			
-			//memset(serverToClient.body.serverToClient.sender, '\0', 32); // Mit Nullen initialisieren
-			memcpy(serverToClient.body.serverToClient.sender, self->name, strlen(self->name));
-			memcpy(serverToClient.body.serverToClient.text, clientToServer.body.clientToServer.text, strlen(clientToServer.body.clientToServer.text));
-			iterateList(networkSend, self, &serverToClient);
-		}
-	}
-
-	if(clientName[0] == '\0'){
-		close(self->sock);
-		return NULL;
-	}
-
-	free(buffer);
-	debugPrint("Stopped client thread");
 	return NULL;
 }
