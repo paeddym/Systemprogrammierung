@@ -2,9 +2,19 @@
 #include <mqueue.h>
 #include "broadcastagent.h"
 #include "util.h"
+#include "network.h"
 
 static mqd_t messageQueue;
 static pthread_t threadId;
+
+
+int receiveMessage(int fd, Message *buffer){
+    int connectionStatus = networkReceive(fd, buffer);
+    if (connectionStatus <= connectionError) {
+        errorPrint("Failed to receive message %d ", connectionStatus);
+    }
+    return connectionStatus;
+}
 
 static void *broadcastAgent(void *arg)
 {

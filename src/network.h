@@ -36,6 +36,12 @@ enum ERROR_CODES {
     error = -1
 };
 
+enum USERREMOVED_CODES {
+    ClosedByClient = 0,
+    kickedByAdmin = 1, 
+    connectionError = 2
+};
+
 typedef struct __attribute__((packed))
 {
 	uint32_t magic;
