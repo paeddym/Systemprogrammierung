@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h> 
+#include "broadcastagent.h"
 
 //Functions
 
@@ -62,9 +63,37 @@ void *clientthread(void *arg){
 	debugPrint("Started client thread");
 
 	//Receiving Login Request
+	Message loginRequest;
+	int code = receive(self->sock, &loginRequest);
+	if(code != 0){
+		errorPrint("Login Error");
+		unlockUser();
+		cleanUp(self);
+		return NULL;
+	}
+	printf("Receiving Login Request\n");
+
+	char name[nameMax];
+	int nameLength = getHeaderLength(&loginRequest);
+	memcpy(name, loginRequest.body.loginRequest.name, nameLength);
+	name[nameLength] = '\0';
+	printf("Name: %s\n", name);
+
 
 	//Send Login Response
+	code = handleLogin(self, name, &loginRequest);
+	if(code != loginSuccess){
+		errorPrint("Login Error");
+		unlockUser();
+		cleanUp(self);
+		return NULL;
+	}
 
+	addUser(self);
+	strcpy(self->name, name);
+	printf("Added user %s\n", name);
+
+	//TODO: Send added user message to all users
 
 	return NULL;
 }
