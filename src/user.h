@@ -1,35 +1,32 @@
 #ifndef USER_H
 #define USER_H
 
-#include <pthread.h>
 #include "network.h"
+#include <pthread.h>
 
 typedef struct User
 {
 	struct User *prev;
 	struct User *next;
-	pthread_t thread;	//thread ID of the client thread
-	int socket;			//socket for client
+	pthread_t thread;
+	int sock;			
 	char name[32];
 } User;
 
-// * Add a new user to the list and start client thread
-User *allocateSpace();
+User *allocateSpaceForUser();
+
 User *addUser();
+void iterateOverSockets(int (*func)(int, const Message *), User *self, void *buffer);
 
-// * Iterate over the complete list (to send messages to all users)
-void iterateList(int (*func)(int, const Message *), User *self, void *buffer);
-
-// * Remove a user from the list
-void cleanUp(User *deleteUser);
+void cleanUpOfUser(User *deleteUser);
 void removeUser(User *myUser);
 
-//CAUTION: You will need proper locking!
 int initMutex();
 void lockUser();
-void unlockUser();
+void unLockUser();
 
-User *getUserByName(const char *name);
+User *getUserTroughName(const char *name);
+
 User *getFirstUser();
 
 #endif

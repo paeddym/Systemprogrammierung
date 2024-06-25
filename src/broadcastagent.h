@@ -10,11 +10,16 @@ enum SEMAPHORE {
     running = 1U
 };
 
-int broadcastAgentInit(void);
-void broadcastAgentCleanup(void);
 int receiveMessage(int fd, Message *buffer);
 void broadcastMessage(Message *buffer, User *skipUser);
 void sendMessage(User *myUser, Message *buffer);
+int broadcastAgentInit(void);
+void broadcastAgentCleanup(void);
 void sendToMessageQueue(Message *buffer, User *user);
+void pauseChat();
+void resumeChat();
+uint8_t getChatStatus();
 
 #endif
+
+
