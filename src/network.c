@@ -95,27 +95,6 @@ int networkSend(int fd, const Message *buffer)
 	return code;
 }
 
-Message setMessageType(uint8_t type){
-	Message message;
-	switch(type){
-		case loginResponseType:
-			message.header.type = loginResponseType;
-			message.body.loginResponse.magic = 0x0c001c001;
-			break;
-		case serverToClientType:
-			message.header.type = serverToClientType;
-			break;
-		case userAddedType:
-			message.header.type = userAddedType;
-			break;
-		case userRemovedType:
-			message.header.type = userRemovedType;
-			break;
-	}
-	return message;
-
-}
-
 void setLength(Message *messageBuffer, int contentLength){
 	uint16_t length = 0;
 	switch (messageBuffer->header.type){
