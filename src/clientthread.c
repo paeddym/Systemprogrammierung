@@ -64,7 +64,7 @@ void *clientthread(void *arg){
 	//Receiving Login Request
 	Message loginRequest;
 	int code = receiveMessage(self->socket, &loginRequest);
-	if(code != 0){
+	if(code != noError){
 		errorPrint("Login Error");
 		unlockUser();
 		cleanUp(self);

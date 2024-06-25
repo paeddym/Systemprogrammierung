@@ -104,7 +104,7 @@ void broadcastAgentCleanup(void)
 
 int receiveMessage(int fd, Message *buffer){
     int connectionStatus = networkReceive(fd, buffer);
-    if (connectionStatus != 0) {
+    if (connectionStatus != noError) {
         errorPrint("Failed to receive message! %d ", connectionStatus);
     }
     return connectionStatus;

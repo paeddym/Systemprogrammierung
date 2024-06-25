@@ -25,9 +25,9 @@ enum MESSAGE_TYPES {
 };
 
 enum ERROR_CODES {
-    noError = 0,
     clientClosedConnectionError = 1,
-    error = -1
+    error = 2,
+	noError = 3
 };
 
 enum USER_REMOVED_CODES {
