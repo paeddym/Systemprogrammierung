@@ -17,7 +17,7 @@ void lockUser(){
     pthread_mutex_lock(&userLock);
 }
 
-void unLockUser(){
+void unlockUser(){
     pthread_mutex_unlock(&userLock);
 }
 
@@ -27,15 +27,14 @@ int initMutex() {
     return statusCode;
 }
 
-User *allocateSpaceForUser()
+User *allocateSpace()
 {
     User *newUser = (User *)malloc(sizeof(User));
     if(newUser == NULL)
     {
         errno = ENOMEM;
-        perror("Memory allocation fail");
+        perror("Failed to allocate memory!");
         return NULL;
-        //todo errorhandling
     }
     return newUser;
 }
@@ -116,7 +115,7 @@ static bool lastUser(User *currentUser)
     }
 }
 
-void cleanUpOfUser(User *deleteUser)
+void userCleanUp(User *deleteUser)
 {
     //Thread cleanup
     int cancelResult = pthread_cancel(deleteUser->thread);
@@ -152,7 +151,7 @@ void removeUser(User *currentUser)
         currentUser->prev->next = NULL;
         userBack = currentUser->prev;
     }
-    unLockUser();
+    unlockUser();
     cleanUpOfUser(deleteUser);
     
 }

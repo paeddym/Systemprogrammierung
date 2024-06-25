@@ -52,7 +52,7 @@ int networkReceive(int fd, Message *buffer)
 	printf("text: %s\n", buffer->body.clientToServer.text);
 
 	if(buffer->header.type == loginRequestType){
-		buffer->body.lrq.magic = ntohl(buffer->body.lrq.magic);
+		buffer->body.loginRequest.magic = ntohl(buffer->body.loginRequest.magic);
 	}
 	
 	if(checkBody(buffer) != noError){
@@ -105,7 +105,7 @@ static int checkHeader(uint8_t type, uint16_t length){
 
 static int checkBody(Message *buffer){
 	if(buffer->header.type == loginRequestType){
-		if(buffer->body.lrq.magic != 0x0badf00d){
+		if(buffer->body.loginRequest.magic != 0x0badf00d){
 			perror("Invalid magic number!");
 			return error;
 		}
@@ -117,7 +117,7 @@ void setMessageLength(Message *buffer, int stringLength) {
     uint16_t len = 0;
     switch (buffer->header.type) {
         case loginResponseType:
-            len = sizeof(buffer->body.lre.magic) + sizeof(buffer->body.lre.code) + stringLength;
+            len = sizeof(buffer->body.loginResponse.magic) + sizeof(buffer->body.loginResponse.code) + stringLength;
             break;
         case serverToClientType:
             len = sizeof(buffer->body.serverToClient.timestamp) + sizeof(buffer->body.serverToClient.originalSender) + stringLength;
@@ -139,7 +139,7 @@ Message initMessage(uint8_t type) {
     switch (type) {
         case loginResponseType:
             newMessage.header.type = loginResponseType;
-            newMessage.body.lre.magic = 0xc001c001;
+            newMessage.body.loginResponse.magic = 0xc001c001;
             break;
         case serverToClientType:
             newMessage.header.type = serverToClientType;
@@ -161,7 +161,7 @@ void createMessage(Message *messageBuffer, const char *textBuffer){
 	uint64_t currentTime = time(NULL);
 	switch (messageBuffer->header.type) {
 		case loginResponseType:
-			memcpy(messageBuffer->body.lre.sName, textBuffer, lengthOfText);
+			memcpy(messageBuffer->body.loginResponse.sName, textBuffer, lengthOfText);
 			prepareMessage(messageBuffer);
 			break;
 		case serverToClientType:
@@ -187,7 +187,7 @@ void prepareMessage(Message *buffer) {
     buffer->header.length = htons(buffer->header.length);
     switch (buffer->header.type) {
         case loginResponseType:
-            buffer->body.lre.magic = htonl(buffer->body.lre.magic);
+            buffer->body.loginResponse.magic = htonl(buffer->body.loginResponse.magic);
             break;
         case serverToClientType:
             buffer->body.serverToClient.timestamp = hton64u(buffer->body.serverToClient.timestamp);

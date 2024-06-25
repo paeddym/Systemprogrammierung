@@ -17,5 +17,4 @@ void extractUserName(const char *text, char *userName);
 void handleUserRemoval(User *userToRemove, int urmCode);
 int handleLogin(User *self, char *clientName, Message *lrq);
 
-
 #endif

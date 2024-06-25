@@ -13,7 +13,7 @@
 int getHeaderLength(Message *buffer){
 	int length;
 	if(buffer->header.type == loginRequestType){
-		length = buffer->header.length - sizeof(buffer->body.lrq.magic) - sizeof(buffer->body.lrq.version);
+		length = buffer->header.length - sizeof(buffer->body.loginRequest.magic) - sizeof(buffer->body.loginRequest.version);
 		return length;
 	}
 	if(buffer->header.type == clientToServerType){
@@ -60,8 +60,8 @@ void handleUserRemoval(User *userToRemove, int urmCode){
 int handleLogin(User *self, char *clientName, Message *lrq) {
 	Message lre = initMessage(loginResponseType); 
 	const char serverName[nameMax] = "chatbot-server\0";
-	int clientValidation = checkLoginRequest(clientName, lrq->body.lrq.version);
-	lre.body.lre.code = clientValidation;
+	int clientValidation = checkLoginRequest(clientName, lrq->body.loginRequest.version);
+	lre.body.loginResponse.code = clientValidation;
 	createMessage(&lre, serverName);
 	sendMessage(self, &lre);
 	return clientValidation;
@@ -78,7 +78,7 @@ void *clientthread(void *arg)
 	int statusCode = receiveMessage(self->sock, &lrq); 
 	if (statusCode <= communicationError) {
         errorPrint("Login Request Error");
-		unLockUser();
+		unlockUser();
 		cleanUpOfUser(self);
 		return NULL;
     }
@@ -86,7 +86,7 @@ void *clientthread(void *arg)
 
 	char clientName[nameMax];
 	int lengthOfClientName = getHeaderLength(&lrq);
-	memcpy(clientName, lrq.body.lrq.name, lengthOfClientName); 
+	memcpy(clientName, lrq.body.loginRequest.name, lengthOfClientName); 
 	clientName[lengthOfClientName] = '\0';
 	printf("Clientname: %s\n", clientName);
 
@@ -96,7 +96,7 @@ void *clientthread(void *arg)
 
 	printf("clientValidation %d\n", clientValidation);
 	if(clientValidation != success){
-		unLockUser();
+		unlockUser();
 		cleanUpOfUser(self);
 		return NULL;
 	}
@@ -125,7 +125,7 @@ void *clientthread(void *arg)
 		}
 		loggedInUser = loggedInUser->next;
 	}
-	unLockUser();
+	unlockUser();
 
 
 //Mailserver loop

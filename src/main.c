@@ -27,7 +27,7 @@ static void sigpipe_handler() {
 int main(int argc, char **argv)
 {
 	utilInit(argv[0]);
-	infoPrint("Chat server, group 13");
+	infoPrint("Chat server, group 01");
 	const char *optionsFormat = "dm:p:h";
 	int optionsIndex = 0;
 	in_port_t port = 8111;

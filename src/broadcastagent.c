@@ -62,7 +62,7 @@ static void *broadcastAgent(void *arg)
 int broadcastAgentInit(void)
 {
 	if(sem_init(&sem, pshared, running) != 0) {
-        errorPrint("Semaphore initialisation fail!");
+        errorPrint("Failed to create semaphore!");
         return -1;
     }
 	attribute.mq_maxmsg = 10;
@@ -77,7 +77,7 @@ int broadcastAgentInit(void)
 
 	int thread_result = pthread_create(&threadId, NULL, broadcastAgent, NULL);
 	if (thread_result != 0) {
-		errorPrint("Failed to create thread\n");
+		errorPrint("Failed to create thread!\n");
 		return -1;
 	}
 	return 0;
@@ -102,7 +102,7 @@ void sendToMessageQueue(Message *buffer, User *user) {
 	if (errno == ETIMEDOUT) {
 		msg.body.serverToClient.timestamp = (uint64_t)time(NULL);
 		msg.body.serverToClient.originalSender[0] = '\0';
-		createMessage(&msg, "chat is paused and the send queue is full!");
+		createMessage(&msg, "Chat is paused and the send queue is full!");
 		sendMessage(user, &msg);
 	}
 }

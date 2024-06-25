@@ -57,7 +57,7 @@ int connectionHandler(in_port_t port)
             return -1;
         }
 		lockUser();	
-		User *myUser = allocateSpaceForUser();
+		User *myUser = allocateSpace();
     	myUser->thread = 0;
     	myUser->name[0] = '\0';
 		myUser->sock = client_socket;

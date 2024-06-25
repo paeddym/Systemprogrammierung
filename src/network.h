@@ -3,11 +3,6 @@
 
 #include <stdint.h>
 
-
-/* TODO: When implementing the fully-featured network protocol (including
- * login), replace this with message structures derived from the network
- * protocol (RFC) as found in the moodle course. */
-
 enum ERROR_CODES {
     clientClosedConnectionError = 1,
     error = 2,
@@ -94,8 +89,8 @@ typedef struct __attribute__((packed))
 
 typedef union __attribute__((packed))
 {
-    LoginRequest lrq;
-    LoginResponse lre;
+    LoginRequest loginRequest;
+    LoginResponse loginResponse;
     ClientToServer clientToServer;
     ServerToClient serverToClient;
     UserAdded userAdded;

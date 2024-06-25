@@ -13,17 +13,17 @@ typedef struct User
 	char name[32];
 } User;
 
-User *allocateSpaceForUser();
+User *allocateSpace();
 
 User *addUser();
 void iterateOverSockets(int (*func)(int, const Message *), User *self, void *buffer);
 
-void cleanUpOfUser(User *deleteUser);
+void userCleanUp(User *deleteUser);
 void removeUser(User *myUser);
 
 int initMutex();
 void lockUser();
-void unLockUser();
+void unlockUser();
 
 User *getUserTroughName(const char *name);
 
