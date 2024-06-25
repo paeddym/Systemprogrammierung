@@ -20,20 +20,18 @@ int getHeaderLength(Message *buffer){
 	if(buffer->header.type == clientToServerType){
 		length = buffer->header.length;
 		return length;
+	} else {
+		return error;
 	}
-	return error;
 }
 
 int checkLoginRequest(const char *clientName, uint8_t version){
-	printf("Checking login request\n");
 	if(version != 0){
-		printf("Login Protocol Mismatch\n");
 		return loginProtocolMismatch;
 	}
 
 	for(int i = 0; clientName[i]; i++) {
 		if(clientName[i] < 33 || clientName[i] >= 126 || clientName[i] == 34 || clientName[i] == 37 || clientName[i] == 96){
-			printf("Invalid Name\n");
 			return loginInvalidName;
 		}
 	}
@@ -55,12 +53,9 @@ int handleLogin(User *self, char *name, Message *loginRequest){
 	int code = checkLoginRequest(name, loginRequest->body.loginRequest.version);
 	loginResponse.body.loginResponse.code = code;
 	createMessage(&loginResponse, serverName);
-	printf("Magic number of login response: %d\n", loginResponse.body.loginResponse.magic);
 	sendMessage(self, &loginResponse);
 	return code;
 }
-
-//Client Thread
 
 void *clientthread(void *arg){
 	User *self = (User *)arg;
@@ -87,7 +82,6 @@ void *clientthread(void *arg){
 	//Send Login Response
 	code = handleLogin(self, name, &loginRequest);
 	if(code != loginSuccess){
-		errorPrint("Login Error");
 		unlockUser();
 		cleanUp(self);
 		return NULL;
@@ -126,7 +120,7 @@ void *clientthread(void *arg){
 
 	while(1){
 		serverToClient = initMessage(serverToClientType);
-		memset(buffer, 0, sizeof(textMax));
+		memset(buffer, 0, sizeof(buffer));
 		memset(clientToServer.body.clientToServer.text, 0, sizeof(clientToServer.body.clientToServer.text));
 		memset(serverToClient.body.serverToClient.text, 0, sizeof(serverToClient.body.serverToClient.text));
 
@@ -151,9 +145,12 @@ void *clientthread(void *arg){
 			sendToMessageQueue(&serverToClient, self);
 			continue;
 		}
+
+		//Commands
 	}
 	
 	printf("%s has left the chat\n", self->name);
 	handleUserRemoved(self, userRemovedCode);
+
 	return NULL;
 }

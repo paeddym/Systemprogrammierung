@@ -9,6 +9,7 @@
 #include "network.h"
 #include "connectionhandler.h"
 #include "util.h"
+#include <string.h>
 
 bool isHeaderValid(uint8_t type, uint16_t length){
 	if(type == loginRequestType && (length <= 5 || length >= 37)){
@@ -33,7 +34,6 @@ bool isBodyValid(Message *buffer){
 
 int networkReceive(int fd, Message *buffer)
 {
-	int code = noError;
 	ssize_t receivedBytes = recv(fd, &buffer->header, sizeof(buffer->header), MSG_WAITALL);
 
 	printf("Receiving message with length %d and type %d\n", buffer->header.length, buffer->header.type);
@@ -69,11 +69,10 @@ int networkReceive(int fd, Message *buffer)
 	}
 
 	if(isBodyValid(buffer) == false){
-		perror("Message with invalid body received!");
-		code = error;
+		return error;
 	}
 
-	return code;
+	return noError;
 }
 
 int networkSend(int fd, const Message *buffer)
@@ -87,7 +86,7 @@ int networkSend(int fd, const Message *buffer)
 		code = error;
 	}
 
-	sentBytes = send(fd, &buffer->body, buffer->header.length, 0);
+	sentBytes = send(fd, &buffer->body, ntohs(buffer->header.length), 0);
 	if (sentBytes == -1) {
 		perror("Failed to send message body!");
 		code = error;
@@ -156,7 +155,6 @@ void convertMessageToNetworkOrder(Message *messageBuffer){
 }
 
 void createMessage(Message *messageBuffer, const char *textBuffer){
-	printf("Creating message");
 	int textLength = strlen(textBuffer);
 	setLength(messageBuffer, textLength);
 	uint64_t timestamp = time(NULL);
@@ -173,7 +171,8 @@ void createMessage(Message *messageBuffer, const char *textBuffer){
 			break;
 		case userAddedType:
 			messageBuffer->body.addedUser.timestamp = timestamp;
-			
+			memcpy(messageBuffer->body.addedUser.name, textBuffer, textLength);
+			convertMessageToNetworkOrder(messageBuffer);
 			break;
 		case userRemovedType:
 			messageBuffer->body.removedUser.timestamp = timestamp;
@@ -192,8 +191,6 @@ Message initMessage(uint8_t type){
 			break;
 		case serverToClientType:
 			newMessage.header.type = serverToClientType; 
-			time_t currentTime = time(NULL);
-			newMessage.body.serverToClient.timestamp = (uint64_t)currentTime;
 			break;
 		case userAddedType:
 			newMessage.header.type = userAddedType;

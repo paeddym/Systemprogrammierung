@@ -5,6 +5,9 @@
 #include "util.h"
 #include "user.h"
 #include "clientthread.h"
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <pthread.h>
 
 static int createPassiveSocket(in_port_t port)
 {
@@ -56,6 +59,7 @@ int connectionHandler(in_port_t port)
 		
 		if(client_socket == -1) {
 			errorPrint("Failed to accept connection!");
+			errno = EAGAIN;
 			return -1;
 		}
 
