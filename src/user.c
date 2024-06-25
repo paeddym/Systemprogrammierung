@@ -152,7 +152,7 @@ void removeUser(User *currentUser)
         userBack = currentUser->prev;
     }
     unlockUser();
-    cleanUpOfUser(deleteUser);
+    userCleanUp(deleteUser);
     
 }
 User *getFirstUser(){

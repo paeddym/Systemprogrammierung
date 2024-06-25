@@ -79,7 +79,7 @@ void *clientthread(void *arg)
 	if (statusCode <= communicationError) {
         errorPrint("Login Request Error");
 		unlockUser();
-		cleanUpOfUser(self);
+		userCleanUp(self);
 		return NULL;
     }
 	printf("Login Request received.\n");
@@ -97,7 +97,7 @@ void *clientthread(void *arg)
 	printf("clientValidation %d\n", clientValidation);
 	if(clientValidation != success){
 		unlockUser();
-		cleanUpOfUser(self);
+		userCleanUp(self);
 		return NULL;
 	}
 
