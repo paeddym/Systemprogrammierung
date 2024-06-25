@@ -72,12 +72,12 @@ int broadcastAgentInit(void)
 	return 0;
 }
 
-void sendMessage(User *myUser, Message *buffer){
-	networkSend(myUser->socket, buffer);
+void sendMessage(User *user, Message *buffer){
+	networkSend(user->socket, buffer);
 }
 
 void sendToMessageQueue(Message *buffer, User *user) {
-    Message message = initMessage(MSG_SERVER_TO_CLIENT);
+    Message message = initMessage(serverToClientType);
 
     struct timespec ts;
     ts.tv_sec = 0;
@@ -87,7 +87,7 @@ void sendToMessageQueue(Message *buffer, User *user) {
 	if (errno == ETIMEDOUT) {
 		message.body.serverToClient.timestamp = (uint64_t)time(NULL);
 		message.body.serverToClient.sender[0] = '\0';
-		createMessage(&message, "chat is paused and the send queue is full!");
+		createMessage(&message, "Chat is paused and the send queue is full!");
 		sendMessage(user, &message);
 	}
 }
@@ -95,7 +95,7 @@ void sendToMessageQueue(Message *buffer, User *user) {
 void broadcastAgentCleanup(void)
 {
 	pthread_cancel(threadId);
-	mq_close(messageQueue);
+	mq_close(messageQueue);	
 	mq_unlink(messageQueueName);
 }
 

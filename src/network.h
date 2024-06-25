@@ -5,15 +5,6 @@
 
 enum { MSG_MAX = 1024 };
 
-enum MSG_TYPE{
-	MSG_LOGIN_REQUEST = 0,
-	MSG_LOGIN_RESPONSE = 1,
-	MSG_CLIENT_TO_SERVER = 2,
-	MSG_SERVER_TO_CLIENT = 3,
-	MSG_ADDED_USER = 4,
-	MSG_REMOVED_USER = 5
-};
-
 enum MESSAGE_LIMITS {
     nameMin = 1,
     nameMax = 31,

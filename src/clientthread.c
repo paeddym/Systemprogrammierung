@@ -13,11 +13,11 @@
 
 int getHeaderLength(Message *buffer){
 	int length;
-	if(buffer->header.type == MSG_LOGIN_REQUEST){
+	if(buffer->header.type == loginRequestType){
 		length = buffer->header.length - sizeof(buffer->body.loginRequest.magic) - sizeof(buffer->body.loginRequest.version);
 		return length;
 	}
-	if(buffer->header.type == MSG_CLIENT_TO_SERVER){
+	if(buffer->header.type == clientToServerType){
 		length = buffer->header.length;
 		return length;
 	}
@@ -25,12 +25,15 @@ int getHeaderLength(Message *buffer){
 }
 
 int checkLoginRequest(const char *clientName, uint8_t version){
+	printf("Checking login request\n");
 	if(version != 0){
+		printf("Login Protocol Mismatch\n");
 		return loginProtocolMismatch;
 	}
 
 	for(int i = 0; clientName[i]; i++) {
 		if(clientName[i] < 33 || clientName[i] >= 126 || clientName[i] == 34 || clientName[i] == 37 || clientName[i] == 96){
+			printf("Invalid Name\n");
 			return loginInvalidName;
 		}
 	}
@@ -52,6 +55,7 @@ int handleLogin(User *self, char *name, Message *loginRequest){
 	int code = checkLoginRequest(name, loginRequest->body.loginRequest.version);
 	loginResponse.body.loginResponse.code = code;
 	createMessage(&loginResponse, serverName);
+	printf("Magic number of login response: %d\n", loginResponse.body.loginResponse.magic);
 	sendMessage(self, &loginResponse);
 	return code;
 }
@@ -98,7 +102,7 @@ void *clientthread(void *arg){
 	Message userData = initMessage(userAddedType);
 	createMessage(&userData, self->name);
 	broadcastMessage(&userData, NULL);
-	printf("%s has joined the chat", self->name);
+	printf("%s has joined the chat\n", self->name);
 
 	
 	//Send data of registered users to new user
