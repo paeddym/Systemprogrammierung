@@ -7,11 +7,13 @@
 #include "util.h"
 #include "network.h"
 #include "user.h"
+#include <semaphore.h>
 
 static mqd_t messageQueue;
 static pthread_t threadId;
 struct mq_attr attr;
 static unsigned int priority = 0;
+static sem_t semaphore;
 
 static char *messageQueueName = "/msq";
 
@@ -48,13 +50,13 @@ static void *broadcastAgent(void *arg)
 
 int broadcastAgentInit(void)
 {
-
-	//TODO: create message queue
-
-	//attr.mq_flags = 0;
+	if(sem_init(&semaphore, pshared, running) != 0){
+		errorPrint("Failed to initialize semaphore!\n");
+		return -1;
+	}
+	
 	attr.mq_maxmsg = 10;
 	attr.mq_msgsize = messageMax;
-	//attr.mq_curmsgs = 0;
 	int flags = O_CREAT | O_RDWR;
 	int mode = 0666;
 	messageQueue = mq_open(messageQueueName, flags, mode, &attr);
@@ -97,6 +99,7 @@ void broadcastAgentCleanup(void)
 	pthread_cancel(threadId);
 	mq_close(messageQueue);	
 	mq_unlink(messageQueueName);
+	sem_destroy(&semaphore);
 }
 
 int receiveMessage(int fd, Message *buffer){

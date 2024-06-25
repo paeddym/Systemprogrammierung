@@ -117,6 +117,8 @@ void *clientthread(void *arg){
 		currentUser = currentUser->next;
 	}
 
+	unlockUser();
+
 	//Enter chat loop
 	Message clientToServer, serverToClient;
 	uint8_t userRemovedCode;
@@ -150,9 +152,8 @@ void *clientthread(void *arg){
 			continue;
 		}
 	}
-
-	unlockUser();
-
-
+	
+	printf("%s has left the chat\n", self->name);
+	handleUserRemoved(self, userRemovedCode);
 	return NULL;
 }

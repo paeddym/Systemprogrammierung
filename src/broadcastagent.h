@@ -4,6 +4,12 @@
 #include "network.h"
 #include "user.h"
 
+enum SEMAPHORE {
+    pshared = 0,
+    paused = 0U,
+    running = 1U
+};
+
 int broadcastAgentInit(void);
 void broadcastAgentCleanup(void);
 int receiveMessage(int fd, Message *buffer);
