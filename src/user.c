@@ -56,7 +56,7 @@ User *addUser(User *newUser)
     return newUser;
 }
 
-User *getUserTroughName(const char *name)
+User *getUserByName(const char *name)
 {
     User *currentUser = userFront;
     while(currentUser != NULL)
@@ -76,7 +76,7 @@ User *getUserTroughName(const char *name)
 void iterateOverSockets(int (*func)(int, const Message *), User *self, void *buffer) {
     for (User *currentUser = userFront; currentUser != NULL; currentUser = currentUser->next) {
         if (currentUser != self) {
-            printf("send to: %s", currentUser->name);
+            printf("Sending to: %s", currentUser->name);
             func(currentUser->sock, buffer);
         }
     }

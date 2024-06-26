@@ -34,7 +34,7 @@ int checkLoginRequest(const char *clientName, uint8_t clientVersion) {
             return nameInvalid;
         }
     }
-    return (getUserTroughName(clientName) == NULL) ? success : nameAlreadyTaken;
+    return (getUserByName(clientName) == NULL) ? success : nameAlreadyTaken;
 }
 
 void extractUserName(const char *text, char *userName) {
@@ -49,10 +49,10 @@ void extractUserName(const char *text, char *userName) {
 
 void handleUserRemoval(User *userToRemove, int urmCode){
 	lockUser();
-		Message urm = initMessage(userRemovedType);
-		urm.body.userRemoved.code = urmCode;
-		createMessage(&urm, userToRemove->name);
-		broadcastMessage(&urm, userToRemove);
+	Message urm = initMessage(userRemovedType);
+	urm.body.userRemoved.code = urmCode;
+	createMessage(&urm, userToRemove->name);
+	broadcastMessage(&urm, userToRemove);
 	printf("User %s has left the chat.\n", userToRemove->name);
 	removeUser(userToRemove);
 }
@@ -142,12 +142,12 @@ void *clientthread(void *arg)
 		
 		int statusCode = receiveMessage(self->sock, &clientToServer);
 		if(statusCode == clientClosedConnectionError){
-			printf("set1 %d ", statusCode);
+			printf("Client closed connection in mail loop%d ", statusCode);
 			urmCode	= connectionClosedByClient;
 			break;
 		}
 		if(statusCode == error){
-			printf("set2 %d ", statusCode);
+			printf("Communication error in mail loop%d ", statusCode);
 			urmCode = communicationError;
 			break;
 		}
@@ -176,7 +176,7 @@ void *clientthread(void *arg)
 		}
 		
 		if(commandCode == invalidCommandCode){
-			createMessage(&serverToClient, "Command not found!");
+			createMessage(&serverToClient, "Invalid command!");
 			sendMessage(self, &serverToClient);
 			continue;
 		}
@@ -199,11 +199,11 @@ void *clientthread(void *arg)
 			char userNameToKick[nameMax];
 			extractUserName(clientToServer.body.clientToServer.text, userNameToKick);
 			if(strcmp(userNameToKick, "Admin") == 0){
-				createMessage(&serverToClient, "You can't kick the Admin!");
+				createMessage(&serverToClient, "You can't kick yourself!");
 				sendMessage(self, &serverToClient);
 				continue;
 			}
-			User *userToKick = getUserTroughName(userNameToKick);
+			User *userToKick = getUserByName(userNameToKick);
 			if(userToKick == NULL){
 				printf("userToKick == NULL");
 				createMessage(&serverToClient, "User not found!");
@@ -216,7 +216,7 @@ void *clientthread(void *arg)
 		}
 		else if(commandCode == pauseChatCommandCode) {
 			if(getChatStatus() == paused){
-				createMessage(&serverToClient, "You can not pause the chat - chat is already paused!");
+				createMessage(&serverToClient, "Chat is already paused!");
 				sendMessage(self, &serverToClient);
 				continue;
 			}
@@ -227,7 +227,7 @@ void *clientthread(void *arg)
 		}
 		else if(commandCode == resumeChatCommandCode) {
 			if(getChatStatus() != paused){
-				createMessage(&serverToClient, "You can not resume the chat - chat is not paused!");
+				createMessage(&serverToClient, "Chat is not paused!");
 				sendMessage(self, &serverToClient);
 				continue;
 			}

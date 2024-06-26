@@ -27,8 +27,7 @@ static int createPassiveSocket(in_port_t port)
 	server_address.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if (bind(fd, (struct sockaddr *)&server_address, sizeof(server_address)) == -1) {
-        errorPrint("failed to bind!");
-        //close(fd);
+        errorPrint("Failed to bind!");
         return -1;
     }
 	if (listen(fd, 5) == -1) {
@@ -42,7 +41,7 @@ int connectionHandler(in_port_t port)
 {
 	const int fd = createPassiveSocket(port);
 	if(fd == -1){
-		errorPrint("Unable to create server socket!");
+		errorPrint("Unable to create passive socket!");
 		return -1;
 	}
 	if (initMutex() != 0) {
@@ -63,8 +62,8 @@ int connectionHandler(in_port_t port)
 		myUser->sock = client_socket;
 		int status = pthread_create(&myUser->thread, NULL, clientthread, myUser);
 		if(status != 0){
-			errorPrint("pthread_create error");
-			return 0;
+			errorPrint("Failed to create user thread!");
+			return -1;
 		}
 	}
 	return 0;

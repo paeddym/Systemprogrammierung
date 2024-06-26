@@ -18,7 +18,7 @@ int networkReceive(int fd, Message *buffer)
 
 	ssize_t bytesReceived = recv(fd, &buffer->header, sizeof(buffer->header), MSG_WAITALL);
 	
-	printf("Sending message...\n");
+	printf("Receiving message...\n");
 	printf("Type: %d\n", buffer->header.type);
 	printf("Length: %d\n", buffer->header.length);
 
@@ -41,15 +41,15 @@ int networkReceive(int fd, Message *buffer)
 	bytesReceived = recv(fd, &buffer->body, buffer->header.length, MSG_WAITALL);
 	printf("Bytes received: %ld\n", bytesReceived);
 	if(bytesReceived == 0){
-		perror("Receive fail!");
+		perror("Client closed connection");
 		return clientClosedConnectionError;
 	}
 	else if(bytesReceived == -1){
-		perror("Receive fail!");
+		perror("Failed to receive!");
 		return error;
 	}
 
-	printf("text: %s\n", buffer->body.clientToServer.text);
+	printf("Text: %s\n", buffer->body.clientToServer.text);
 
 	if(buffer->header.type == loginRequestType){
 		buffer->body.loginRequest.magic = ntohl(buffer->body.loginRequest.magic);
@@ -73,13 +73,13 @@ int networkSend(int fd, const Message *buffer)
 	ssize_t bytesSent = send(fd, &buffer->header, sizeof(buffer->header), 0);
 
 	if(bytesSent == -1){
-		perror("Send fail");
+		perror("Failed to send header!");
 		errorCode = error;
 	}
 
 	bytesSent = send(fd, &buffer->body, ntohs(buffer->header.length), 0);
 	if(bytesSent == -1){
-		perror("Send fail");
+		perror("Failed to send body!");
 		errorCode = error;
 	}
 	return errorCode;
@@ -88,14 +88,14 @@ int networkSend(int fd, const Message *buffer)
 static int checkHeader(uint8_t type, uint16_t length){
 	if(type == loginRequestType){
 		if(length <= 5 || length >= 37){
-			perror("Invalid length!");
+			perror("Invalid loginRequest length!");
 			return error;
 		}
 		return noError;
 	}
 	else if(type == clientToServerType){
 		if(length > 512){
-			perror("Invalid length!");
+			perror("Invalid message length!");
 			return error;
 		}
 		return noError;
