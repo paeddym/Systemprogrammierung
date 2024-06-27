@@ -33,7 +33,7 @@ User *allocateSpace()
     if(newUser == NULL)
     {
         errno = ENOMEM;
-        perror("Failed to allocate memory!");
+        perror("Failed to allocate memory for user!\n");
         return NULL;
     }
     return newUser;
@@ -76,7 +76,7 @@ User *getUserByName(const char *name)
 void iterateOverSockets(int (*func)(int, const Message *), User *self, void *buffer) {
     for (User *currentUser = userFront; currentUser != NULL; currentUser = currentUser->next) {
         if (currentUser != self) {
-            printf("Sending to: %s", currentUser->name);
+            printf("Sending to: %s\n", currentUser->name);
             func(currentUser->sock, buffer);
         }
     }

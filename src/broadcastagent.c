@@ -21,7 +21,7 @@ static char *messageQueueName = "/msq";
 int receiveMessage(int fd, Message *buffer){
     int connectionStatus = networkReceive(fd, buffer);
     if (connectionStatus <= communicationError) {
-        errorPrint("Error while receiving message %d ", connectionStatus);
+        errorPrint("Error while receiving message: %d\n", connectionStatus);
     }
     return connectionStatus;
 }
@@ -38,23 +38,23 @@ static void *broadcastAgent(void *arg)
 {
 	Message serverToClient;
 	while (1) {
-		if (getChatStatus() == running) {
+		sem_wait(&sem);
 			struct mq_attr queueAttr;
 			int status = mq_getattr(messageQueue, &queueAttr);
 			if (status == -1) {
-				perror("mq_getattr error");
+				perror("Failed to get message queue attributes\n");
 				break;
 			}
 			if (queueAttr.mq_curmsgs > 0) {
 				printf("Message in queue\n");
 				ssize_t bytesRead = mq_receive(messageQueue, ((char *)&serverToClient), attribute.mq_msgsize, &priority);
 				if (bytesRead == -1) {
-					perror("mq_receive error");
+					perror("Failed to retrieve messages from message queue\n");
 					break;		
 				}
 				broadcastMessage(&serverToClient, NULL);
 			}
-		}
+		sem_post(&sem);
 	}
 	return arg;
 }
@@ -62,7 +62,7 @@ static void *broadcastAgent(void *arg)
 int broadcastAgentInit(void)
 {
 	if(sem_init(&sem, pshared, running) != 0) {
-        errorPrint("Failed to create semaphore!");
+        errorPrint("Failed to create semaphore!\n");
         return -1;
     }
 	attribute.mq_maxmsg = 10;
@@ -71,7 +71,7 @@ int broadcastAgentInit(void)
 	int mode = 0666;
 	messageQueue = mq_open(messageQueueName, flags, mode, &attribute);
     if (messageQueue == (mqd_t)-1) {
-        errorPrint("mq_open error");
+        errorPrint("Failed to create message queue!\n");
         return -1;
     }
 
@@ -102,7 +102,7 @@ void sendToMessageQueue(Message *buffer, User *user) {
 	if (errno == ETIMEDOUT) {
 		msg.body.serverToClient.timestamp = (uint64_t)time(NULL);
 		msg.body.serverToClient.originalSender[0] = '\0';
-		createMessage(&msg, "Chat is paused and the send queue is full!");
+		createMessage(&msg, "Chat is paused and the send queue is full!\n");
 		sendMessage(user, &msg);
 	}
 }

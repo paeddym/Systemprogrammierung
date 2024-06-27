@@ -53,13 +53,13 @@ void handleUserRemoval(User *userToRemove, int urmCode){
 	urm.body.userRemoved.code = urmCode;
 	createMessage(&urm, userToRemove->name);
 	broadcastMessage(&urm, userToRemove);
-	printf("User %s has left the chat.\n", userToRemove->name);
+	printf("%s has left the chat.\n", userToRemove->name);
 	removeUser(userToRemove);
 }
 
 int handleLogin(User *self, char *clientName, Message *lrq) {
 	Message lre = initMessage(loginResponseType); 
-	const char serverName[nameMax] = "chatbot-server\0";
+	const char serverName[nameMax] = "Chatbot-Server\0";
 	int clientValidation = checkLoginRequest(clientName, lrq->body.loginRequest.version);
 	lre.body.loginResponse.code = clientValidation;
 	createMessage(&lre, serverName);
@@ -70,19 +70,19 @@ int handleLogin(User *self, char *clientName, Message *lrq) {
 void *clientthread(void *arg)
 {
 	User *self = (User *)arg;
-	debugPrint("Client thread started.");
+	debugPrint("Client thread of %s started\n", self->name);
 
 
 //LoginRequest
 	Message lrq;
 	int statusCode = receiveMessage(self->sock, &lrq); 
 	if (statusCode <= communicationError) {
-        errorPrint("Login Request Error");
+        errorPrint("Failed to receive login request!\n");
 		unlockUser();
 		userCleanUp(self);
 		return NULL;
     }
-	printf("Login Request received.\n");
+	printf("Login Request received\n");
 
 	char clientName[nameMax];
 	int lengthOfClientName = getHeaderLength(&lrq);
@@ -94,7 +94,7 @@ void *clientthread(void *arg)
 //LoginResponse
 	int clientValidation = handleLogin(self, clientName, &lrq);
 
-	printf("clientValidation %d\n", clientValidation);
+	printf("ClientValidation: %d\n", clientValidation);
 	if(clientValidation != success){
 		unlockUser();
 		userCleanUp(self);
@@ -111,7 +111,7 @@ void *clientthread(void *arg)
 	Message uad = initMessage(userAddedType);
 	createMessage(&uad, self->name);
 	broadcastMessage(&uad, NULL);
-	printf("User %s has joined the chat.\n", self->name);
+	printf("%s has joined the chat.\n", self->name);
 
 
 //Send new User the Data of the other Users
@@ -142,12 +142,12 @@ void *clientthread(void *arg)
 		
 		int statusCode = receiveMessage(self->sock, &clientToServer);
 		if(statusCode == clientClosedConnectionError){
-			printf("Client closed connection in mail loop%d ", statusCode);
+			printf("Client closed connection during mail loop: %d\n", statusCode);
 			urmCode	= connectionClosedByClient;
 			break;
 		}
 		if(statusCode == error){
-			printf("Communication error in mail loop%d ", statusCode);
+			printf("Communication error during mail loop: %d\n", statusCode);
 			urmCode = communicationError;
 			break;
 		}
@@ -156,14 +156,14 @@ void *clientthread(void *arg)
 		memcpy(textBuffer, clientToServer.body.clientToServer.text, lengthOfText);
 		textBuffer[lengthOfText] = '\0';
 
-		//Message
+	//Message
 		if(textBuffer[0] != '/'){
 			strcpy(serverToClient.body.serverToClient.originalSender, self->name);
 			createMessage(&serverToClient, textBuffer);
 			sendToMessageQueue(&serverToClient, self);
 			continue;
 		}
-		//Admin Commands
+	//Admin Commands
 		serverToClient.body.serverToClient.originalSender[0] = '\0';
 
 		int commandCode = invalidCommandCode;
@@ -176,18 +176,18 @@ void *clientthread(void *arg)
 		}
 		
 		if(commandCode == invalidCommandCode){
-			createMessage(&serverToClient, "Invalid command!");
+			createMessage(&serverToClient, "Invalid command!\n");
 			sendMessage(self, &serverToClient);
 			continue;
 		}
 
 		if (strcmp(self->name, "Admin") != 0) {
 			if (commandCode == kickClientCommandCode) {
-				strcpy(textBuffer, "You must be administrator to use the /kick Command!");
+				strcpy(textBuffer, "You must be administrator to use the /kick Command!\n");
 			} else if (commandCode == pauseChatCommandCode) {
-				strcpy(textBuffer, "You must be administrator to use the /pause Command!");
+				strcpy(textBuffer, "You must be administrator to use the /pause Command!\n");
 			} else if (commandCode == resumeChatCommandCode) {
-				strcpy(textBuffer, "You must be administrator to use the /resume Command!");
+				strcpy(textBuffer, "You must be administrator to use the /resume Command!\n");
 			}
 			createMessage(&serverToClient, textBuffer);
 			sendMessage(self, &serverToClient);
@@ -199,48 +199,47 @@ void *clientthread(void *arg)
 			char userNameToKick[nameMax];
 			extractUserName(clientToServer.body.clientToServer.text, userNameToKick);
 			if(strcmp(userNameToKick, "Admin") == 0){
-				createMessage(&serverToClient, "You can't kick yourself!");
+				createMessage(&serverToClient, "You can't kick yourself!\n");
 				sendMessage(self, &serverToClient);
 				continue;
 			}
 			User *userToKick = getUserByName(userNameToKick);
 			if(userToKick == NULL){
 				printf("userToKick == NULL");
-				createMessage(&serverToClient, "User not found!");
+				createMessage(&serverToClient, "User not found!\n");
 				sendMessage(self, &serverToClient);
 				continue;
 			}
-			printf("User %s has been kicked by %s.\n", userToKick->name, self->name);
+			printf("%s has been kicked by %s.\n", userToKick->name, self->name);
 			handleUserRemoval(userToKick, kickedFromTheServer);
 			continue;
 		}
 		else if(commandCode == pauseChatCommandCode) {
 			if(getChatStatus() == paused){
-				createMessage(&serverToClient, "Chat is already paused!");
+				createMessage(&serverToClient, "Chat is already paused!\n");
 				sendMessage(self, &serverToClient);
 				continue;
 			}
 			pauseChat();
-			createMessage(&serverToClient, "The chat has been paused");
+			createMessage(&serverToClient, "The chat has been paused\n");
 			broadcastMessage(&serverToClient, NULL);
 			continue;
 		}
 		else if(commandCode == resumeChatCommandCode) {
 			if(getChatStatus() != paused){
-				createMessage(&serverToClient, "Chat is not paused!");
+				createMessage(&serverToClient, "Chat is not paused!\n");
 				sendMessage(self, &serverToClient);
 				continue;
 			}
 			resumeChat();
-			createMessage(&serverToClient, "The chat has been resumed");
+			createMessage(&serverToClient, "The chat has been resumed\n");
 			broadcastMessage(&serverToClient, NULL);
 			continue;						
 		}
 	}
-	printf("User %s has left the chat.\n", self->name);
+	printf("%s has left the chat.\n", self->name);
 	handleUserRemoval(self, urmCode);
-
-	debugPrint("Client thread stopping.");
+	debugPrint("Client thread stopping\n");
 
 	return NULL;
 }

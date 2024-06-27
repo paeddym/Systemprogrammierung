@@ -8,26 +8,26 @@
 #include <stdlib.h>
 
 static void sigint_handler() {
-    infoPrint("Caught Signal 2 SIGINT, shutting down!");
+    infoPrint("Caught Signal 2 SIGINT, shutting down!\n");
     broadcastAgentCleanup();
     exit(EXIT_SUCCESS);
 }
 
 static void sigsegv_handler() {
-    errorPrint("Caught Segmentation Fault SIGSEGV, shutting down!");
+    errorPrint("Caught Segmentation Fault SIGSEGV, shutting down!\n");
     broadcastAgentCleanup();
     exit(EXIT_FAILURE);
 }
 
 static void sigpipe_handler() {
-    errorPrint("Caught Broken Pipe Error SIGPIPE, shutting down!");
+    errorPrint("Caught Broken Pipe Error SIGPIPE, shutting down!\n");
 }
 
 
 int main(int argc, char **argv)
 {
 	utilInit(argv[0]);
-	infoPrint("Chat server, group 01");
+	infoPrint("Chat server, group 01\n");
 	const char *optionsFormat = "dm:p:h";
 	int optionsIndex = 0;
 	in_port_t port = 8111;
@@ -49,26 +49,26 @@ int main(int argc, char **argv)
                 uint16_t strLength = strlen(stringPort);
                 for (int i = 0; i < strLength; i++) {
                     if (stringPort[i] < 0x30 || stringPort[i] > 0x39) {
-                        errorPrint("Invalid port number!");
+                        errorPrint("Port numbers must be digits!\n");
                         exit(EXIT_FAILURE);
                     }
                 }
                 port = (uint16_t) atoi(stringPort);
                 if (port < 1023) {
-                    errorPrint("Invalid port number!");
+                    errorPrint("You may not use priviledged ports!\n");
                     exit(EXIT_FAILURE);
                 }
                 break;
             case 'h':
 				exit(EXIT_SUCCESS);
             default:
-                errorPrint("Option %c incorrect", optionsIndex);
+                errorPrint("Option %c incorrect\n", optionsIndex);
                 exit(EXIT_FAILURE);
         }
     }
 
 	if (broadcastAgentInit() == -1) {
-		printf("broadcastAgentInit failed\n");
+		printf("Failed to initiate broadcastAgent!\n");
         return EXIT_FAILURE;
     }
 
@@ -98,20 +98,20 @@ int main(int argc, char **argv)
     };
 
     if (sigaction(SIGINT, &action_sigint, NULL) != 0) {
-        errorPrint("Cannot register signal handler!");
+        errorPrint("Cannot register signal handler!\n");
         exit(EXIT_FAILURE);
     }
     if (sigaction(SIGSEGV, &action_sigsegv, NULL) != 0) {
-        errorPrint("Cannot register signal handler!");
+        errorPrint("Cannot register signal handler!\n");
         exit(EXIT_FAILURE);
     }
     if (sigaction(SIGPIPE, &action_sigpipe, NULL) != 0) {
-        errorPrint("Cannot register signal handler!");
+        errorPrint("Cannot register signal handler!\n");
         exit(EXIT_FAILURE);
     }
 
 	const int result = connectionHandler((in_port_t)port);
-	printf("connectionHandler failed %d\n", result);
+	printf("Connection handler has failed: %d\n", result);
 
 	return result != -1 ? EXIT_SUCCESS : EXIT_FAILURE;
 }

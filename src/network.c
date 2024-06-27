@@ -23,29 +23,29 @@ int networkReceive(int fd, Message *buffer)
 	printf("Length: %d\n", buffer->header.length);
 
 	if(bytesReceived == 0){
-		perror("client closed connection");
+		perror("Client closed connection while receiving header!\n");
 		return clientClosedConnectionError;
 	}
 	else if(bytesReceived == -1){
-		perror("Failed to receive!");
+		perror("Error while receiving message header!\n");
 		return error;
 	}
 
 	buffer->header.length = ntohs(buffer->header.length);
 
 	if(checkHeader(buffer->header.type, buffer->header.length) != noError){
-		perror("Invalid length or type");
+		perror("Invalid header length or type!\n");
 		return error;
 	}
 
 	bytesReceived = recv(fd, &buffer->body, buffer->header.length, MSG_WAITALL);
 	printf("Bytes received: %ld\n", bytesReceived);
 	if(bytesReceived == 0){
-		perror("Client closed connection");
+		perror("Client closed connection while receiving body!\n");
 		return clientClosedConnectionError;
 	}
 	else if(bytesReceived == -1){
-		perror("Failed to receive!");
+		perror("Error while receiving message body!\n");
 		return error;
 	}
 
@@ -68,18 +68,18 @@ int networkSend(int fd, const Message *buffer)
 	printf("Sending message...\n");
 	printf("Type: %d\n", buffer->header.type);
 	printf("Length: %d\n", buffer->header.length);
-	printf("text: %s\n", buffer->body.serverToClient.text);
+	printf("Text: %s\n", buffer->body.serverToClient.text);
 
 	ssize_t bytesSent = send(fd, &buffer->header, sizeof(buffer->header), 0);
 
 	if(bytesSent == -1){
-		perror("Failed to send header!");
+		perror("Failed to send header!\n");
 		errorCode = error;
 	}
 
 	bytesSent = send(fd, &buffer->body, ntohs(buffer->header.length), 0);
 	if(bytesSent == -1){
-		perror("Failed to send body!");
+		perror("Failed to send body!\n");
 		errorCode = error;
 	}
 	return errorCode;
@@ -88,14 +88,14 @@ int networkSend(int fd, const Message *buffer)
 static int checkHeader(uint8_t type, uint16_t length){
 	if(type == loginRequestType){
 		if(length <= 5 || length >= 37){
-			perror("Invalid loginRequest length!");
+			perror("Invalid loginRequest length!\n");
 			return error;
 		}
 		return noError;
 	}
 	else if(type == clientToServerType){
 		if(length > 512){
-			perror("Invalid message length!");
+			perror("Invalid Client to Server message length!\n");
 			return error;
 		}
 		return noError;
@@ -106,7 +106,7 @@ static int checkHeader(uint8_t type, uint16_t length){
 static int checkBody(Message *buffer){
 	if(buffer->header.type == loginRequestType){
 		if(buffer->body.loginRequest.magic != 0x0badf00d){
-			perror("Invalid magic number!");
+			perror("Invalid magic number!\n");
 			return error;
 		}
 	}
